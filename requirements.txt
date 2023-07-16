@@ -1,0 +1,12 @@
+fastapi==0.78.0
+uvicorn
+pydantic
+python-dotenv
+requests
+pytest
+pyhere
+mangum
+black
+python-multipart
+pymongo
+pytest-mock
