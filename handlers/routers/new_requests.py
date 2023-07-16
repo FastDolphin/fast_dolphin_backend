@@ -72,6 +72,13 @@ async def create_new_request(
     output.StatusMessage = "Success"
     response.status_code = status.HTTP_200_OK
 
+    # Publish the details of the newly created request to the RabbitMQ queue
+    request.app.rabbitmq_channel.basic_publish(
+        exchange='',
+        routing_key='notify_admin',
+        body=encoded_new_customer_request
+    )
+
     return output
 
 

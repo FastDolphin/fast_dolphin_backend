@@ -10,3 +10,4 @@ black
 python-multipart
 pymongo
 pytest-mock
+pika
