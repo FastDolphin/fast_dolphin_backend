@@ -1,0 +1,36 @@
+name: lint+pytest
+on:
+  pull_request:
+    branches: [master, 28_troubleshooting_learning_issues, 58_encode_images_separately]
+
+jobs:
+  # checking python black linting
+  python-black:
+    name: Python Black
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Python Black
+        uses: cytopia/docker-black@0.8
+        with:
+          path: '.'
+
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # check against multiple python versions
+        python-version: ["3.10", "3.11"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest==7.3.1
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Test with pytest
+        run: pytest
