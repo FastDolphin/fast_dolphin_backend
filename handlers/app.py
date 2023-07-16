@@ -20,8 +20,17 @@ app = FastAPI()
 
 @app.on_event("startup")
 def startup_db_client():
-    app.mongodb_client = MongoClient(config["MONGO_ADDRESS"])
-    app.database = app.mongodb_client[config["DB_NAME"]]
+    # get the values from environment variables
+    MONGO_INITDB_ROOT_USERNAME = config["MONGO_INITDB_ROOT_USERNAME"]
+    MONGO_INITDB_ROOT_PASSWORD = config["MONGO_INITDB_ROOT_PASSWORD"]
+    DB_NAME = config["MONGODB_NAME"]
+
+    # construct the MONGO_DETAILS connection string
+    MONGO_DETAILS = f"mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/{DB_NAME}?authSource=admin"
+
+    # connect to the MongoDB client
+    app.mongodb_client = MongoClient(MONGO_DETAILS)
+    app.database = app.mongodb_client[DB_NAME]
 
 
 @app.on_event("shutdown")

@@ -22,7 +22,7 @@ RUN pip install --upgrade pip && \
 COPY . /app/
 
 ENV MONGO_ADDRESS=$MONGO_ADDRESS
-ENV DB_NAME=$DB_NAME
+ENV MONGODB_NAME=$MONGODB_NAME
 
 # Expose the port that the FastAPI app runs on
 EXPOSE 8000

@@ -8,10 +8,11 @@ services:
     ports:
       - 8000:8000
     environment:
-      MONGO_ADDRESS: ${MONGO_ADDRESS}
-      DB_NAME: ${DB_NAME}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGODB_NAME: ${MONGODB_NAME}
     depends_on:
-      - mongo
+      - mongodb
 
   mongodb:
     image: mongo:latest

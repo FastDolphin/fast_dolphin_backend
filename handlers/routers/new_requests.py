@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, Response, status, Depends, Request
+from fastapi import APIRouter, Response, status, Depends, Request, HTTPException
 from fastapi.encoders import jsonable_encoder
 from bson import ObjectId
 from typing import List
@@ -85,7 +85,7 @@ async def read_all_requests(
 
 @router.delete("/{id}", response_model=dict)
 async def delete_request(id: str, request: Request):
-    result = request.app.database.Requests.delete_one({"_id": ObjectId(id)})
+    result = request.app.database.Requests.delete_one({"_id": id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Document not found")
     return {"detail": "Document deleted successfully"}
