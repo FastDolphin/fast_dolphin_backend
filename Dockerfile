@@ -9,18 +9,23 @@ ENV PYTHONUNBUFFERED 1
 RUN mkdir /app
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies and netcat for our wait script
 RUN apt-get update -y && \
-    apt-get install -y libssl-dev libffi-dev python3-dev
+    apt-get install -y libssl-dev libffi-dev python3-dev netcat
 
 # Copy the requirements.txt file and install Python dependencies
 COPY ./fast_dolphin_backend/requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
+# Copy the wait script and make it executable
+COPY ./fast_dolphin_backend/wait-for-it.sh /usr/wait-for-it.sh
+RUN chmod +x /usr/wait-for-it.sh
+
 # Copy the application code and files
 COPY ./fast_dolphin_backend /app/
 
+# Environment variables
 ENV MONGO_ADDRESS=$MONGO_ADDRESS
 ENV MONGODB_NAME=$MONGODB_NAME
 ENV RABBITMQ_DEFAULT_USER=$RABBITMQ_DEFAULT_USER
@@ -32,3 +37,4 @@ EXPOSE 8000
 
 # Run the FastAPI app
 CMD bash -c "env > /app/.env && exec uvicorn main:app --host 0.0.0.0 --port 8000"
+
