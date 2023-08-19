@@ -14,15 +14,18 @@ RUN apt-get update -y && \
     apt-get install -y libssl-dev libffi-dev python3-dev
 
 # Copy the requirements.txt file and install Python dependencies
-COPY requirements.txt /app/requirements.txt
+COPY ./fast_dolphin_backend/requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code and files
-COPY . /app/
+COPY ./fast_dolphin_backend /app/
 
 ENV MONGO_ADDRESS=$MONGO_ADDRESS
 ENV MONGODB_NAME=$MONGODB_NAME
+ENV RABBITMQ_DEFAULT_USER=$RABBITMQ_DEFAULT_USER
+ENV RABBITMQ_DEFAULT_PASS=$RABBITMQ_DEFAULT_PASS
+ENV RABBITMQ_HOST=$RABBITMQ_HOST
 
 # Expose the port that the FastAPI app runs on
 EXPOSE 8000

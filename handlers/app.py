@@ -7,6 +7,7 @@ from .routers import new_requests
 
 from pyhere import here
 import sys
+import pika
 
 sys.path.append(str(here().resolve()))
 
@@ -19,23 +20,32 @@ app = FastAPI()
 
 
 @app.on_event("startup")
-def startup_db_client():
-    # get the values from environment variables
+def startup_event():
+    # MongoDB client initialization
     MONGO_INITDB_ROOT_USERNAME = config["MONGO_INITDB_ROOT_USERNAME"]
     MONGO_INITDB_ROOT_PASSWORD = config["MONGO_INITDB_ROOT_PASSWORD"]
     DB_NAME = config["MONGODB_NAME"]
 
-    # construct the MONGO_DETAILS connection string
     MONGO_DETAILS = f"mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/{DB_NAME}?authSource=admin"
-
-    # connect to the MongoDB client
     app.mongodb_client = MongoClient(MONGO_DETAILS)
     app.database = app.mongodb_client[DB_NAME]
 
+    # RabbitMQ connection initialization
+    RABBITMQ_DEFAULT_USER = config["RABBITMQ_DEFAULT_USER"]
+    RABBITMQ_DEFAULT_PASS = config["RABBITMQ_DEFAULT_PASS"]
+    RABBITMQ_HOST = config["RABBITMQ_HOST"]
+
+    credentials = pika.PlainCredentials(RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS)
+    parameters = pika.ConnectionParameters(host=RABBITMQ_HOST, credentials=credentials)
+    app.rabbitmq_connection = pika.BlockingConnection(parameters)
+    app.rabbitmq_channel = app.rabbitmq_connection.channel()
+    app.rabbitmq_channel.queue_declare(queue="notify_admin")
+
 
 @app.on_event("shutdown")
-def shutdown_db_client():
+def shutdown_event():
     app.mongodb_client.close()
+    app.rabbitmq_connection.close()
 
 
 app.include_router(new_requests.router)
