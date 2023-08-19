@@ -19,7 +19,7 @@ RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy the wait script and make it executable
-COPY ./fast_dolphin_backend/wait-for-it.sh /usr/wait-for-it.sh
+COPY ./fast_dolphin_backend/wait_for_rabbitmq.sh /usr/wait-for-it.sh
 RUN chmod +x /usr/wait-for-it.sh
 
 # Copy the application code and files
