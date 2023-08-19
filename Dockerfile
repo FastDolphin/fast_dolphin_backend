@@ -11,7 +11,7 @@ WORKDIR /app
 
 # Install system dependencies and netcat for our wait script
 RUN apt-get update -y && \
-    apt-get install -y libssl-dev libffi-dev python3-dev netcat
+    apt-get install -y libssl-dev libffi-dev python3-dev netcat-openbsd
 
 # Copy the requirements.txt file and install Python dependencies
 COPY ./fast_dolphin_backend/requirements.txt /app/requirements.txt
