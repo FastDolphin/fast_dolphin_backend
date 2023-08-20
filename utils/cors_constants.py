@@ -10,8 +10,7 @@ class CorsConstants:
         "http://65.21.50.112:3000",
         "https://65.21.50.112:3000",
         "https://fast-dolphin.com",
-        "https://www.fast-dolphin.com"
-
+        "https://www.fast-dolphin.com",
     )
     DEV_HEADERS: Final[Tuple[str]] = (
         "Content-Type",

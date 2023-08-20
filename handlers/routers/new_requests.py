@@ -75,13 +75,26 @@ async def create_new_request(
     response.status_code = status.HTTP_200_OK
 
     encoded_new_customer_request_string: str = json.dumps(encoded_new_customer_request)
+    try:
+        # Check if the channel is open
+        if not request.app.rabbitmq_channel.is_open:
+            # Log the state of the channel
+            logging.warning("RabbitMQ channel is closed. Attempting to reconnect...")
 
-    # Publish the details of the newly created request to the RabbitMQ queue
-    request.app.rabbitmq_channel.basic_publish(
-        exchange="",
-        routing_key="notify_admin",
-        body=encoded_new_customer_request_string,
-    )
+            # Attempt to re-establish the connection
+            request.app.rabbitmq_channel = request.app.rabbitmq_connection.channel()
+            if not request.app.rabbitmq_channel.is_open:
+                raise Exception("Failed to re-establish RabbitMQ channel.")
+
+        # Try publishing the message
+        request.app.rabbitmq_channel.basic_publish(
+            exchange="",
+            routing_key="notify_admin",
+            body=encoded_new_customer_request_string,
+        )
+    except Exception as e:
+        logging.error(f"Error publishing to RabbitMQ: {e}")
+        # Additional error handling can be done here, like raising a custom exception or retrying
 
     return output
 
