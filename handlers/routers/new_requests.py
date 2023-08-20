@@ -75,26 +75,40 @@ async def create_new_request(
     response.status_code = status.HTTP_200_OK
 
     encoded_new_customer_request_string: str = json.dumps(encoded_new_customer_request)
-    try:
-        # Check if the channel is open
-        if not request.app.rabbitmq_channel.is_open:
-            # Log the state of the channel
-            logging.warning("RabbitMQ channel is closed. Attempting to reconnect...")
+    MAX_RETRIES: int = 5
+    for attempt in range(MAX_RETRIES):
+        try:
+            # Check if the connection and channel are open
+            if (
+                not request.app.rabbitmq_connection.is_open
+                or not request.app.rabbitmq_channel.is_open
+            ):
+                # Log the state
+                logging.warning(
+                    "RabbitMQ connection or channel is closed. Attempting to reconnect..."
+                )
 
-            # Attempt to re-establish the connection
-            request.app.rabbitmq_channel = request.app.rabbitmq_connection.channel()
-            if not request.app.rabbitmq_channel.is_open:
-                raise Exception("Failed to re-establish RabbitMQ channel.")
+                # Re-establish the connection and channel
+                request.app.rabbitmq_connection = pika.BlockingConnection(
+                    pika.ConnectionParameters(host="rabbitmq")
+                )
+                request.app.rabbitmq_channel = request.app.rabbitmq_connection.channel()
 
-        # Try publishing the message
-        request.app.rabbitmq_channel.basic_publish(
-            exchange="",
-            routing_key="notify_admin",
-            body=encoded_new_customer_request_string,
-        )
-    except Exception as e:
-        logging.error(f"Error publishing to RabbitMQ: {e}")
-        # Additional error handling can be done here, like raising a custom exception or retrying
+            # Try publishing the message
+            request.app.rabbitmq_channel.basic_publish(
+                exchange="",
+                routing_key="notify_admin",
+                body=encoded_new_customer_request_string,
+            )
+            break  # If successful, exit the loop
+        except Exception as e:
+            logging.error(f"Attempt {attempt + 1}: Error publishing to RabbitMQ: {e}")
+            if attempt == MAX_RETRIES - 1:
+                # After all retries, if still unsuccessful
+                # Additional error handling can be done here, like raising a custom exception
+                raise Exception(
+                    f"Failed to publish to RabbitMQ after {MAX_RETRIES} attempts."
+                )
 
     return output
 
