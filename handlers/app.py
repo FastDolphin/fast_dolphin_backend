@@ -15,7 +15,14 @@ sys.path.append(str(here().resolve()))
 from utils import CorsConstants, connect_to_rabbitmq
 
 config = dotenv_values(".env")
+MONGO_INITDB_ROOT_USERNAME = config["MONGO_INITDB_ROOT_USERNAME"]
+MONGO_INITDB_ROOT_PASSWORD = config["MONGO_INITDB_ROOT_PASSWORD"]
+DB_NAME = config["MONGODB_NAME"]
+MONGO_DETAILS = f"mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/{DB_NAME}?authSource=admin"
 
+RABBITMQ_DEFAULT_USER = config["RABBITMQ_DEFAULT_USER"]
+RABBITMQ_DEFAULT_PASS = config["RABBITMQ_DEFAULT_PASS"]
+RABBITMQ_HOST = config["RABBITMQ_HOST"]
 
 app = FastAPI()
 
@@ -23,18 +30,9 @@ app = FastAPI()
 @app.on_event("startup")
 def startup_event():
     # MongoDB client initialization
-    MONGO_INITDB_ROOT_USERNAME = config["MONGO_INITDB_ROOT_USERNAME"]
-    MONGO_INITDB_ROOT_PASSWORD = config["MONGO_INITDB_ROOT_PASSWORD"]
-    DB_NAME = config["MONGODB_NAME"]
 
-    MONGO_DETAILS = f"mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/{DB_NAME}?authSource=admin"
     app.mongodb_client = MongoClient(MONGO_DETAILS)
     app.database = app.mongodb_client[DB_NAME]
-
-    # RabbitMQ connection initialization
-    RABBITMQ_DEFAULT_USER = config["RABBITMQ_DEFAULT_USER"]
-    RABBITMQ_DEFAULT_PASS = config["RABBITMQ_DEFAULT_PASS"]
-    RABBITMQ_HOST = config["RABBITMQ_HOST"]
 
     app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq(
         RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
@@ -47,7 +45,9 @@ async def monitor_rabbitmq_connection():
     while True:
         if not app.rabbitmq_connection.is_open:
             print("RabbitMQ connection lost. Reconnecting...")
-            app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq()
+            app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq(
+                RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
+            )
         await asyncio.sleep(60)  # check every minute
 
 
