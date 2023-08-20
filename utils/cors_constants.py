@@ -5,13 +5,13 @@ from typing import Final, Tuple
 @dataclass
 class CorsConstants:
     DEV_ORIGINS: Final[Tuple[str]] = (
-        "http://127.0.0.1:5050",
-        "capacitor://localhost",
-        "http://localhost",
-        "ionic://localhost",
         "http://localhost:5050",
-        "http://127.0.0.1:5050/login",
-        "http://localhost:5050/login",
+        "http://127.0.0.1:5050",
+        "http://65.21.50.112:3000",
+        "https://65.21.50.112:3000",
+        "https://fast-dolphin.com",
+        "https://www.fast-dolphin.com"
+
     )
     DEV_HEADERS: Final[Tuple[str]] = (
         "Content-Type",
