@@ -1,4 +1,4 @@
-import time
+import asyncio
 
 from fastapi import FastAPI, Depends
 from pymongo import MongoClient
@@ -9,11 +9,10 @@ from .routers import new_requests
 
 from pyhere import here
 import sys
-import pika
 
 sys.path.append(str(here().resolve()))
 
-from utils import CorsConstants
+from utils import CorsConstants, connect_to_rabbitmq
 
 config = dotenv_values(".env")
 
@@ -37,28 +36,19 @@ def startup_event():
     RABBITMQ_DEFAULT_PASS = config["RABBITMQ_DEFAULT_PASS"]
     RABBITMQ_HOST = config["RABBITMQ_HOST"]
 
-    max_retries = 10
-    retry_delay = 5  # in seconds
+    app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq(
+        RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
+    )
+    asyncio.create_task(monitor_rabbitmq_connection())
 
-    for _ in range(max_retries):
-        try:
-            print(f"Attempting to connect to RabbitMQ host: {RABBITMQ_HOST}")
-            credentials = pika.PlainCredentials(
-                RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
-            )
-            parameters = pika.ConnectionParameters(
-                host=RABBITMQ_HOST, credentials=credentials
-            )
-            app.rabbitmq_connection = pika.BlockingConnection(parameters)
-            app.rabbitmq_channel = app.rabbitmq_connection.channel()
-            app.rabbitmq_channel.queue_declare(queue="notify_admin")
-            print("Connected to RabbitMQ successfully!")
-            break
-        except Exception as e:
-            print(f"Failed to connect to RabbitMQ: {e}")
-            time.sleep(retry_delay)
-    else:
-        raise Exception("Failed to connect to RabbitMQ after multiple retries")
+
+# Proactive Monitoring (optional but recommended)
+async def monitor_rabbitmq_connection():
+    while True:
+        if not app.rabbitmq_connection.is_open:
+            print("RabbitMQ connection lost. Reconnecting...")
+            app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq()
+        await asyncio.sleep(60)  # check every minute
 
 
 @app.on_event("shutdown")
