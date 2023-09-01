@@ -7,7 +7,7 @@ from typing import List
 from pyhere import here
 import sys
 import json
-
+import pika
 
 sys.path.append(str(here().resolve()))
 
