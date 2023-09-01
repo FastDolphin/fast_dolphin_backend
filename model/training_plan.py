@@ -25,7 +25,6 @@ class Exercise(BaseModel):
 
 
 class TrainingPlan(BaseModel):
-    id: str = Field(default_factory=uuid.uuid4, alias="_id")
     LevelWeekDay: str = None
     Level: int
     Week: int
@@ -34,3 +33,7 @@ class TrainingPlan(BaseModel):
 
     def set_LevelWeekDay(self):
         self.LevelWeekDay: str = str(self.Level) + str(self.Week) + str(self.Day)
+
+
+class TrainingPlanWithId(TrainingPlan):
+    id: str = Field(default_factory=uuid.uuid4, alias="_id")

@@ -1,7 +1,7 @@
 import time
 from fastapi import APIRouter, Response, status, Request
 from fastapi.encoders import jsonable_encoder
-from model import TrainingPlan, RouterOutput
+from model import TrainingPlan, RouterOutput, TrainingPlanWithId
 from utils import NotFoundError, AlreadyExistsError
 
 
@@ -51,7 +51,9 @@ def create_training_plan(
     if existing_training_plan:
         raise AlreadyExistsError()
 
-    encoded_training_plan = jsonable_encoder(training_plan)
+    training_plan_with_id = TrainingPlanWithId(**training_plan.dict())
+
+    encoded_training_plan = jsonable_encoder(training_plan_with_id)
 
     uploaded_training_plan = request.app.trainingplans_collection.insert_one(
         encoded_training_plan
