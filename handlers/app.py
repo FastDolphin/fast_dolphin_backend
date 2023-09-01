@@ -36,7 +36,6 @@ def startup_event():
     app.database = app.mongodb_client[DB_NAME]
     app.requests_collection = app.database[REQUESTS_COLLECTION]
     app.trainingplans_collection = app.database[TRAININGPLANS_COLLECTION]
-    app.metadata_collection = app.database[METADATA_COLLECTION]
     app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq(
         RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
     )
