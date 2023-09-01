@@ -21,6 +21,7 @@ class CustomerRequest(BaseModel):
     Surname: str
     KidsName: str
     KidsSurname: str
+    BirthYear: int = 0
     PhoneNumber: str
     numberOfLessonsWeekly: int
     typeOfLessons: str
