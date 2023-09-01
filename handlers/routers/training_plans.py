@@ -89,9 +89,6 @@ async def read_all_training_plans(request: Request, response: Response) -> Route
 
     training_plans = list(request.app.database.TrainingPlans.find(limit=100))
 
-    if not training_plans:
-        raise NotFoundError()
-
     output.Resources = [
         TrainingPlan(**training_plan) for training_plan in training_plans
     ]
