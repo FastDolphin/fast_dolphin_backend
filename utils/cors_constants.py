@@ -5,8 +5,8 @@ from typing import Final, Tuple
 @dataclass
 class CorsConstants:
     DEV_ORIGINS: Final[Tuple[str]] = (
-        "http://localhost:5050",
-        "http://127.0.0.1:5050",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
         "http://65.21.50.112:3000",
         "https://65.21.50.112:3000",
         "https://fast-dolphin.com",
