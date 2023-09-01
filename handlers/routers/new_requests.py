@@ -40,7 +40,7 @@ async def create_new_request(
     output = RouterOutput(StatusMessage="Failure")
 
     all_existing_requests_of_this_customer = list(
-        request.app.database.Requests.find({"Email": new_customer_request.Email})
+        request.app.requests_collection.find({"Email": new_customer_request.Email})
     )
 
     if all_existing_requests_of_this_customer:
@@ -61,10 +61,10 @@ async def create_new_request(
         raise WrongEmailFormat()
 
     encoded_new_customer_request = jsonable_encoder(new_customer_request_with_timestamp)
-    uploaded_customer_request = request.app.database.Requests.insert_one(
+    uploaded_customer_request = request.app.requests_collection.insert_one(
         encoded_new_customer_request
     )
-    created_customer_request = request.app.database.Requests.find_one(
+    created_customer_request = request.app.requests_collection.find_one(
         {"_id": uploaded_customer_request.inserted_id}
     )
 
@@ -117,13 +117,13 @@ async def create_new_request(
 async def read_all_requests(
     request: Request,
 ) -> List[CustomerRequestWithIdAndTimeStamp]:
-    all_requests = request.app.database.Requests.find()
+    all_requests = request.app.requests_collection.find()
     return [CustomerRequestWithIdAndTimeStamp(**request) for request in all_requests]
 
 
 @router.delete("/{id}", response_model=dict)
 async def delete_request(id: str, request: Request):
-    result = request.app.database.Requests.delete_one({"_id": id})
+    result = request.app.requests_collection.delete_one({"_id": id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Document not found")
     return {"detail": "Document deleted successfully"}

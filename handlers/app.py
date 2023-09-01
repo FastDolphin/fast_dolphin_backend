@@ -18,6 +18,8 @@ config = dotenv_values(".env")
 MONGO_INITDB_ROOT_USERNAME = config["MONGO_INITDB_ROOT_USERNAME"]
 MONGO_INITDB_ROOT_PASSWORD = config["MONGO_INITDB_ROOT_PASSWORD"]
 DB_NAME = config["MONGODB_NAME"]
+REQUESTS_COLLECTION = config["REQUESTS_COLLECTION"]
+TRAININGPLANS_COLLECTION = config["TRAININGPLANS_COLLECTION"]
 MONGO_DETAILS = f"mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/{DB_NAME}?authSource=admin"
 
 RABBITMQ_DEFAULT_USER = config["RABBITMQ_DEFAULT_USER"]
@@ -30,9 +32,10 @@ app = FastAPI()
 @app.on_event("startup")
 def startup_event():
     # MongoDB client initialization
-
     app.mongodb_client = MongoClient(MONGO_DETAILS)
     app.database = app.mongodb_client[DB_NAME]
+    app.requests_collection = app.database[REQUESTS_COLLECTION]
+    app.trainingplans_collection = app.database[TRAININGPLANS_COLLECTION]
 
     app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq(
         RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
