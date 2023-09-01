@@ -44,7 +44,7 @@ def create_training_plan(
 
     training_plan.set_LevelWeekDay()
 
-    existing_training_plan = request.app.database.TrainingPlans.find_one(
+    existing_training_plan = request.app.trainingplans_collection.find_one(
         {"LevelWeekDay": training_plan.LevelWeekDay}
     )
 
@@ -53,10 +53,10 @@ def create_training_plan(
 
     encoded_training_plan = jsonable_encoder(training_plan)
 
-    uploaded_training_plan = request.app.database.TrainingPlans.insert_one(
+    uploaded_training_plan = request.app.trainingplans_collection.insert_one(
         encoded_training_plan
     )
-    created_training_plan = request.app.database.TrainingPlans.find_one(
+    created_training_plan = request.app.trainingplans_collection.find_one(
         {"_id": uploaded_training_plan.inserted_id}
     )
 
@@ -72,7 +72,7 @@ def delete_training_plan(
 ) -> Response:
     level_week_day: str = str(level) + str(week) + str(day)
 
-    delete_result = request.app.database.TrainingPlans.delete_one(
+    delete_result = request.app.trainingplans_collection.delete_one(
         {"LevelWeekDay": level_week_day}
     )
 
@@ -87,7 +87,7 @@ def delete_training_plan(
 async def read_all_training_plans(request: Request, response: Response) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
 
-    training_plans = list(request.app.database.TrainingPlans.find(limit=100))
+    training_plans = list(request.app.trainingplans_collection.find(limit=100))
 
     output.Resources = [
         TrainingPlan(**training_plan) for training_plan in training_plans
