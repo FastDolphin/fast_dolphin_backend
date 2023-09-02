@@ -5,7 +5,7 @@ from pymongo import MongoClient
 from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import dotenv_values
-from .routers import new_requests
+from .routers import new_requests, training_plans
 
 from pyhere import here
 import sys
@@ -36,7 +36,6 @@ def startup_event():
     app.database = app.mongodb_client[DB_NAME]
     app.requests_collection = app.database[REQUESTS_COLLECTION]
     app.trainingplans_collection = app.database[TRAININGPLANS_COLLECTION]
-
     app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq(
         RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
     )
@@ -61,6 +60,7 @@ def shutdown_event():
 
 
 app.include_router(new_requests.router)
+app.include_router(training_plans.router)
 
 app.add_middleware(
     CORSMiddleware,

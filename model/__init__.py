@@ -4,3 +4,4 @@ from .resources import (
     CustomerRequestWithId,
     CustomerRequestWithIdAndTimeStamp,
 )
+from .training_plan import TrainingPlan, TrainingPlanWithId
