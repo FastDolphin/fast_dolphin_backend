@@ -1,4 +1,6 @@
 import time
+from typing import Optional
+
 from fastapi import APIRouter, Response, status, Request
 from fastapi.encoders import jsonable_encoder
 from model import TrainingPlan, RouterOutput, TrainingPlanWithId
@@ -17,20 +19,37 @@ logger.setLevel(logging.DEBUG)
 
 @router.get("/", response_model=RouterOutput)
 def read_training_plan(
-    request: Request, level: int, week: int, day: int, response: Response
+    request: Request,
+    level: int,
+    week: int,
+    response: Response,
+    day: Optional[int] = None,
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
 
-    level_week_day: str = str(level) + str(week) + str(day)
+    if day is not None:
+        level_week_day: str = str(level) + str(week) + str(day)
 
-    existing_training_plan = request.app.trainingplans_collection.find_one(
-        {"LevelWeekDay": level_week_day}
-    )
+        existing_training_plan = request.app.trainingplans_collection.find_one(
+            {"LevelWeekDay": level_week_day}
+        )
 
-    if not existing_training_plan:
-        raise NotFoundError()
+        if not existing_training_plan:
+            raise NotFoundError()
 
-    output.Resources.append(TrainingPlan(**existing_training_plan))
+        output.Resources.append(TrainingPlan(**existing_training_plan))
+    else:
+        # If day is not provided, fetch all training plans for the specified level and week
+        level_week_prefix: str = str(level) + str(week)
+        matching_training_plans = request.app.trainingplans_collection.find(
+            {"LevelWeekDay": {"$regex": f"^{level_week_prefix}"}}
+        )
+        if not matching_training_plans:
+            raise NotFoundError()
+
+        for training_plan in matching_training_plans:
+            output.Resources.append(TrainingPlan(**training_plan))
+
     output.StatusMessage = "Success"
     response.status_code = status.HTTP_200_OK
     return output
