@@ -30,9 +30,17 @@ class TrainingPlan(BaseModel):
     Week: int
     Day: int
     Exercises: List[Exercise]
+    TotalVolume: float = 0.0
+    TotalTime: float = 0.0
 
     def set_LevelWeekDay(self):
         self.LevelWeekDay: str = str(self.Level) + str(self.Week) + str(self.Day)
+
+    def set_total_volume_and_time(self):
+        if self.Exercises:
+            for exercise in self.Exercises:
+                self.TotalVolume += exercise.Volume
+                self.TotalTime += exercise.Time
 
 
 class TrainingPlanWithId(TrainingPlan):
