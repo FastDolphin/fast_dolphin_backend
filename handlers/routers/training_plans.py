@@ -85,12 +85,13 @@ def update_training_plan(
     if not existing_training_plan:
         raise NotFoundError()
 
-    training_plan_with_id = TrainingPlanWithId(**training_plan.dict())
-    training_plan_with_id.id = existing_training_plan["_id"]
-    encoded_training_plan = jsonable_encoder(training_plan_with_id)
+    updated_training_plan_with_id = TrainingPlanWithId(**training_plan.dict())
+    updated_training_plan_with_id.id = existing_training_plan["_id"]
+    encoded_updated_training_plan = jsonable_encoder(updated_training_plan_with_id)
+    encoded_existing_training_plan = jsonable_encoder(existing_training_plan.dict())
 
-    uploaded_training_plan = request.app.trainingplans_collection.insert_one(
-        encoded_training_plan
+    uploaded_training_plan = request.app.trainingplans_collection.replace_one(
+        encoded_existing_training_plan, encoded_updated_training_plan
     )
     created_training_plan = request.app.trainingplans_collection.find_one(
         {"_id": uploaded_training_plan.inserted_id}
