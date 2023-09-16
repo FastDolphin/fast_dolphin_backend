@@ -69,6 +69,38 @@ def create_training_plan(
     return output
 
 
+@router.put("/", response_model=RouterOutput)
+def create_training_plan(
+    request: Request, training_plan: TrainingPlan, response: Response
+) -> RouterOutput:
+    output = RouterOutput(StatusMessage="Failure")
+
+    training_plan.set_LevelWeekDay()
+    training_plan.set_total_volume_and_time()
+
+    existing_training_plan = request.app.trainingplans_collection.find_one(
+        {"LevelWeekDay": training_plan.LevelWeekDay}
+    )
+
+    if not existing_training_plan:
+        raise NotFoundError()
+
+    training_plan_with_id = TrainingPlanWithId(**training_plan.dict())
+    encoded_training_plan = jsonable_encoder(training_plan_with_id)
+
+    uploaded_training_plan = request.app.trainingplans_collection.insert_one(
+        encoded_training_plan
+    )
+    created_training_plan = request.app.trainingplans_collection.find_one(
+        {"_id": uploaded_training_plan.inserted_id}
+    )
+
+    output.Resources.append(created_training_plan)
+    output.StatusMessage = "Success"
+    response.status_code = status.HTTP_200_OK
+    return output
+
+
 @router.delete("/", response_model=RouterOutput)
 def delete_training_plan(
     request: Request, level: int, week: int, day: int, response: Response
