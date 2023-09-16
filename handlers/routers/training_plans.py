@@ -88,7 +88,7 @@ def update_training_plan(
     updated_training_plan_with_id = TrainingPlanWithId(**training_plan.dict())
     updated_training_plan_with_id.id = existing_training_plan["_id"]
     encoded_updated_training_plan = jsonable_encoder(updated_training_plan_with_id)
-    encoded_existing_training_plan = jsonable_encoder(existing_training_plan.dict())
+    encoded_existing_training_plan = jsonable_encoder(existing_training_plan)
 
     uploaded_training_plan = request.app.trainingplans_collection.replace_one(
         encoded_existing_training_plan, encoded_updated_training_plan
