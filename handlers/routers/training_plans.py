@@ -2,7 +2,7 @@ import time
 from fastapi import APIRouter, Response, status, Request
 from fastapi.encoders import jsonable_encoder
 from model import TrainingPlan, RouterOutput, TrainingPlanWithId
-from utils import NotFoundError, AlreadyExistsError
+from utils import NotFoundError, AlreadyExistsError, NotUpdatedError
 
 
 import logging
@@ -90,14 +90,18 @@ def update_training_plan(
     encoded_updated_training_plan = jsonable_encoder(updated_training_plan_with_id)
     encoded_existing_training_plan = jsonable_encoder(existing_training_plan)
 
-    updated_training_plan = request.app.trainingplans_collection.replace_one(
+    result = request.app.trainingplans_collection.replace_one(
         encoded_existing_training_plan, encoded_updated_training_plan
     )
-    created_training_plan = request.app.trainingplans_collection.find_one(
-        {"_id": updated_training_plan.upserted_id}
-    )
-
-    output.Resources.append(created_training_plan)
+    if result.matched_count == 0:
+        raise NotFoundError()
+    elif result.modified_count == 0:
+        raise NotUpdatedError()
+    else:
+        updated_training_plan = request.app.trainingplans_collection.find_one(
+            {"_id": encoded_existing_training_plan["_id"]}
+        )
+    output.Resources.append(updated_training_plan)
     output.StatusMessage = "Success"
     response.status_code = status.HTTP_200_OK
     return output

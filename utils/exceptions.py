@@ -13,6 +13,12 @@ class NotFoundError(HTTPException):
         super().__init__(status_code=404, detail=detail)
 
 
+class NotUpdatedError(HTTPException):
+    def __init__(self):
+        detail = "Not updated error."
+        super().__init__(status_code=500, detail=detail)
+
+
 class AlreadyExistsError(HTTPException):
     def __init__(self):
         detail = "Already exists."
