@@ -39,8 +39,12 @@ class TrainingPlan(BaseModel):
     def set_total_volume_and_time(self):
         if self.Exercises:
             for exercise in self.Exercises:
-                self.TotalVolume += exercise.Volume
-                self.TotalTime += exercise.Time
+                volume = exercise.Volume
+                time = exercise.Time
+                if volume and volume.replace(".", "", 1).isdigit():
+                    self.TotalVolume += float(volume)
+                if time and time.replace(".", "", 1).isdigit():
+                    self.TotalTime += float(time)
 
 
 class TrainingPlanWithId(TrainingPlan):
