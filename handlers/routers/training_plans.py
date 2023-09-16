@@ -90,11 +90,11 @@ def update_training_plan(
     encoded_updated_training_plan = jsonable_encoder(updated_training_plan_with_id)
     encoded_existing_training_plan = jsonable_encoder(existing_training_plan)
 
-    uploaded_training_plan = request.app.trainingplans_collection.replace_one(
+    updated_training_plan = request.app.trainingplans_collection.replace_one(
         encoded_existing_training_plan, encoded_updated_training_plan
     )
     created_training_plan = request.app.trainingplans_collection.find_one(
-        {"_id": uploaded_training_plan.inserted_id}
+        {"_id": updated_training_plan.upserted_id}
     )
 
     output.Resources.append(created_training_plan)
