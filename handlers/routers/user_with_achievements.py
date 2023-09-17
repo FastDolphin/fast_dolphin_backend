@@ -91,20 +91,24 @@ def create_user_with_achievements(
                 )
                 raise AlreadyExistsError()
             else:
-                user_with_achievements_with_id: UserWithAchievements = UserWithAchievementsWithId(**user)
-                target_year_with_achievements.Achievements.append(user_with_achievements.Years[0].Achievements[0])
+                user_with_achievements_with_id: UserWithAchievements = (
+                    UserWithAchievementsWithId(**user)
+                )
+                target_year_with_achievements.Achievements.append(
+                    user_with_achievements.Years[0].Achievements[0]
+                )
                 for _year in user_with_achievements_with_id.Years:
                     if _year.Year == target_year:
                         user_with_achievements_with_id.Years.pop(_year)
-                user_with_achievements_with_id.Years.append(target_year_with_achievements)
+                user_with_achievements_with_id.Years.append(
+                    target_year_with_achievements
+                )
 
     # user_with_achievements_with_id = UserWithAchievementsWithId(
     #     **user_with_achievements.dict()
     # )
     encoded_user = jsonable_encoder(user_with_achievements_with_id)
-    logger.info(
-        f"Created user with achievements and id: {json.dumps(encoded_user)}"
-    )
+    logger.info(f"Created user with achievements and id: {json.dumps(encoded_user)}")
     uploaded_user_with_achievements = (
         request.app.userwithachievements_collection.insert_one(encoded_user)
     )
