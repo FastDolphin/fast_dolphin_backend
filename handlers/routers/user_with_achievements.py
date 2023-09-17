@@ -93,10 +93,10 @@ def create_user_with_achievements(
     user_with_achievements_with_id = UserWithAchievementsWithId(
         **user_with_achievements.dict()
     )
-    logger.info(
-        f"Created user with achievements and id: {json.dumps(user_with_achievements_with_id.dict())}"
-    )
     encoded_user = jsonable_encoder(user_with_achievements_with_id)
+    logger.info(
+        f"Created user with achievements and id: {json.dumps(encoded_user)}"
+    )
     uploaded_user_with_achievements = (
         request.app.userwithachievements_collection.insert_one(encoded_user)
     )
