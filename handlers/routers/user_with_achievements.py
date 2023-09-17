@@ -51,7 +51,7 @@ def read_user_with_achievements(
                         ):
                             output.Resources.append(achievement)
                         else:
-                            NotFoundError()
+                            raise NotFoundError()
                 else:
                     raise NotFoundError()
     else:
