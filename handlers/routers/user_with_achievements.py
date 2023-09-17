@@ -137,3 +137,18 @@ def delete_user_with_achievements(
         response.status_code = status.HTTP_204_NO_CONTENT
         return response
     raise NotFoundError()
+
+
+@router.get("/all", response_model=RouterOutput)
+async def read_all_users_with_achievements(request: Request, response: Response) -> RouterOutput:
+    output = RouterOutput(StatusMessage="Failure")
+
+    users_with_achievements = list(request.app.userwithachievements_collection.find(limit=100))
+
+    output.Resources = [
+        UserWithAchievementsWithId(**user) for user in users_with_achievements
+    ]
+    output.StatusMessage = "Success"
+    response.status_code = status.HTTP_200_OK
+    return output
+
