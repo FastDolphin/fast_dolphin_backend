@@ -54,7 +54,7 @@ def read_user_with_achievements(
                     raise NotFoundError()
     else:
         raise NotImplementedError
-    if not response.Resources:
+    if not output.Resources:
         raise NotFoundError()
     output.StatusMessage = "Success"
     response.status_code = status.HTTP_200_OK
