@@ -1,5 +1,5 @@
 import uuid
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -20,7 +20,7 @@ class UserWithAchievements(BaseModel):
     Name: str
     Surname: str
     YearOfBirth: int
-    Years: List[YearWithAchievements]
+    YearsWithAchievements: Optional[List[YearWithAchievements]] = None
 
 
 class UserWithAchievementsWithId(UserWithAchievements):
