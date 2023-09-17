@@ -50,6 +50,12 @@ def read_user_with_achievements(
                             and achievement.Distance == distance
                         ):
                             output.Resources.append(achievement)
+                        else:
+                            NotFoundError()
+                else:
+                    raise NotFoundError()
+            else:
+                raise NotFoundError()
     else:
         raise NotImplementedError
     output.StatusMessage = "Success"
