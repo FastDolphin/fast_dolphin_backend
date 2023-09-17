@@ -92,7 +92,7 @@ def create_user_with_achievements(
                 raise AlreadyExistsError()
             else:
                 user_with_achievements_with_id: UserWithAchievements = (
-                    UserWithAchievementsWithId(**user)
+                    UserWithAchievementsWithId(**user_with_achievements)
                 )
                 target_year_with_achievements.Achievements.append(
                     user_with_achievements.Years[0].Achievements[0]
