@@ -1,5 +1,5 @@
 import time
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 from fastapi import APIRouter, Response, status, Request
 from fastapi.encoders import jsonable_encoder
@@ -69,7 +69,18 @@ def create_user_with_achievements(
     existing_user = request.app.userwithachievements_collection.find_one(
         {"TGid": user_with_achievements.TGid}
     )
-    if existing_user:
+
+    years_with_achievements: List[Dict[str, Any]] = existing_user["Years"]
+    for year in years_with_achievements:
+        if year["Year"] == user_with_achievements.Years[0].Year:
+            target_year_with_achievements: YearWithAchievements = YearWithAchievements(
+                **year
+            )
+
+    if (
+        user_with_achievements.Years[0].Achievements[0]
+        in target_year_with_achievements.Achievements
+    ):
         raise AlreadyExistsError()
 
     user_with_achievements_with_id = UserWithAchievementsWithId(
