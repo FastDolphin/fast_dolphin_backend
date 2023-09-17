@@ -54,8 +54,6 @@ def read_user_with_achievements(
                             NotFoundError()
                 else:
                     raise NotFoundError()
-            else:
-                raise NotFoundError()
     else:
         raise NotImplementedError
     output.StatusMessage = "Success"
