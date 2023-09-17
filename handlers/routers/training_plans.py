@@ -47,6 +47,7 @@ def read_training_plan(
         if not matching_training_plans:
             raise NotFoundError()
 
+        matching_training_plans.sort(key=lambda x: x['Day'])
         for training_plan in matching_training_plans:
             output.Resources.append(TrainingPlan(**training_plan))
 
