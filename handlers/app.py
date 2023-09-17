@@ -5,7 +5,7 @@ from pymongo import MongoClient
 from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import dotenv_values
-from .routers import new_requests, training_plans
+from .routers import new_requests, training_plans, user_with_achievements
 
 from pyhere import here
 import sys
@@ -20,6 +20,7 @@ MONGO_INITDB_ROOT_PASSWORD = config["MONGO_INITDB_ROOT_PASSWORD"]
 DB_NAME = config["MONGODB_NAME"]
 REQUESTS_COLLECTION = config["REQUESTS_COLLECTION"]
 TRAININGPLANS_COLLECTION = config["TRAININGPLANS_COLLECTION"]
+USERWITHACHIEVEMENTS_COLLECTION = config["USERWITHACHIEVEMENTS_COLLECTION"]
 MONGO_DETAILS = f"mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/{DB_NAME}?authSource=admin"
 
 RABBITMQ_DEFAULT_USER = config["RABBITMQ_DEFAULT_USER"]
@@ -36,6 +37,7 @@ def startup_event():
     app.database = app.mongodb_client[DB_NAME]
     app.requests_collection = app.database[REQUESTS_COLLECTION]
     app.trainingplans_collection = app.database[TRAININGPLANS_COLLECTION]
+    app.userwithachievements_collection = app.database[USERWITHACHIEVEMENTS_COLLECTION]
     app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq(
         RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
     )
@@ -61,6 +63,7 @@ def shutdown_event():
 
 app.include_router(new_requests.router)
 app.include_router(training_plans.router)
+app.include_router(user_with_achievements.router)
 
 app.add_middleware(
     CORSMiddleware,

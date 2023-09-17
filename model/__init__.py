@@ -5,3 +5,9 @@ from .resources import (
     CustomerRequestWithIdAndTimeStamp,
 )
 from .training_plan import TrainingPlan, TrainingPlanWithId
+from .user_with_achievements import (
+    Achievement,
+    YearWithAchievements,
+    UserWithAchievements,
+    UserWithAchievementsWithId,
+)
