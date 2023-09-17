@@ -62,6 +62,7 @@ def create_training_plan(
     output = RouterOutput(StatusMessage="Failure")
 
     training_plan.set_LevelWeekDay()
+    training_plan.set_total_volume_and_time()
 
     existing_training_plan = request.app.trainingplans_collection.find_one(
         {"LevelWeekDay": training_plan.LevelWeekDay}
