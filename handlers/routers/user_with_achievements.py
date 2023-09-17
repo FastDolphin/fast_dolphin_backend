@@ -49,7 +49,7 @@ def read_user_with_achievements(
                             achievement.Stroke == stroke
                             and achievement.Distance == distance
                         ):
-                            output.Resources.append(achievement(**achievement))
+                            output.Resources.append(achievement)
     else:
         raise NotImplementedError
     output.StatusMessage = "Success"

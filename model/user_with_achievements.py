@@ -7,6 +7,7 @@ class Achievement(BaseModel):
     Distance: int
     Stroke: str
     Date: str
+    TimeAchievement: str
 
 
 class YearWithAchievements(BaseModel):
