@@ -1,3 +1,4 @@
+import json
 import time
 from typing import Optional, List, Dict, Any
 
@@ -66,25 +67,34 @@ def create_user_with_achievements(
     request: Request, user_with_achievements: UserWithAchievements, response: Response
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
+    logger.info(f"Got request with {json.dumps(user_with_achievements.dict())}")
+    logger.info(f"Looking for an achievement with TGid: {user_with_achievements.TGid}")
     existing_user = request.app.userwithachievements_collection.find_one(
         {"TGid": user_with_achievements.TGid}
     )
-
+    logger.info(f"Found existing_user: {json.dumps(existing_user)}")
     years_with_achievements: List[Dict[str, Any]] = existing_user["Years"]
     for year in years_with_achievements:
         if year["Year"] == user_with_achievements.Years[0].Year:
+            logger.info(f"Found the target year: {year['Year']}")
             target_year_with_achievements: YearWithAchievements = YearWithAchievements(
                 **year
             )
-
-    if (
-        user_with_achievements.Years[0].Achievements[0]
-        in target_year_with_achievements.Achievements
-    ):
-        raise AlreadyExistsError()
+            logger.info(f"Initialized target year with achivements: {json.dumps(year)}")
+            if (
+                user_with_achievements.Years[0].Achievements[0]
+                in target_year_with_achievements.Achievements
+            ):
+                logger.warning(
+                    f"Found existing achievement {json.dumps(user_with_achievements.Years[0].Achievements[0].dict())}"
+                )
+                raise AlreadyExistsError()
 
     user_with_achievements_with_id = UserWithAchievementsWithId(
         **user_with_achievements.dict()
+    )
+    logger.info(
+        f"Created user with achievements and id: {json.dumps(user_with_achievements_with_id.dict())}"
     )
     encoded_user = jsonable_encoder(user_with_achievements_with_id)
     uploaded_user_with_achievements = (
@@ -94,6 +104,9 @@ def create_user_with_achievements(
         request.app.userwithachievements_collection.find_one(
             {"_id": uploaded_user_with_achievements.inserted_id}
         )
+    )
+    logger.info(
+        f"Created user with achievements: {json.dumps(created_user_with_achievements)}"
     )
     output.Resources.append(created_user_with_achievements)
     output.StatusMessage = "Success"
