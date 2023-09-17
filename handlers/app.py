@@ -15,6 +15,7 @@ sys.path.append(str(here().resolve()))
 from utils import CorsConstants, connect_to_rabbitmq
 
 config = dotenv_values(".env")
+__STAGE__ = config.get("__STAGE__", "prod")
 MONGO_INITDB_ROOT_USERNAME = config["MONGO_INITDB_ROOT_USERNAME"]
 MONGO_INITDB_ROOT_PASSWORD = config["MONGO_INITDB_ROOT_PASSWORD"]
 DB_NAME = config["MONGODB_NAME"]
@@ -22,7 +23,8 @@ REQUESTS_COLLECTION = config["REQUESTS_COLLECTION"]
 TRAININGPLANS_COLLECTION = config["TRAININGPLANS_COLLECTION"]
 USERWITHACHIEVEMENTS_COLLECTION = config["USERWITHACHIEVEMENTS_COLLECTION"]
 MONGO_DETAILS = f"mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/{DB_NAME}?authSource=admin"
-
+if __STAGE__ == "dev":
+    MONGO_DETAILS = "mongodb://localhost:27017"
 RABBITMQ_DEFAULT_USER = config["RABBITMQ_DEFAULT_USER"]
 RABBITMQ_DEFAULT_PASS = config["RABBITMQ_DEFAULT_PASS"]
 RABBITMQ_HOST = config["RABBITMQ_HOST"]
@@ -38,10 +40,11 @@ def startup_event():
     app.requests_collection = app.database[REQUESTS_COLLECTION]
     app.trainingplans_collection = app.database[TRAININGPLANS_COLLECTION]
     app.userwithachievements_collection = app.database[USERWITHACHIEVEMENTS_COLLECTION]
-    app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq(
-        RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
-    )
-    asyncio.create_task(monitor_rabbitmq_connection())
+    if __STAGE__ != "dev":
+        app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq(
+            RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
+        )
+        asyncio.create_task(monitor_rabbitmq_connection())
 
 
 # Proactive Monitoring (optional but recommended)
@@ -58,7 +61,8 @@ async def monitor_rabbitmq_connection():
 @app.on_event("shutdown")
 def shutdown_event():
     app.mongodb_client.close()
-    app.rabbitmq_connection.close()
+    if __STAGE__ != "dev":
+        app.rabbitmq_connection.close()
 
 
 app.include_router(new_requests.router)
