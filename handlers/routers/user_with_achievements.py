@@ -76,6 +76,7 @@ def create_user_with_achievements(
     years_with_achievements: List[Dict[str, Any]] = existing_user["Years"]
     for year in years_with_achievements:
         if year["Year"] == user_with_achievements.Years[0].Year:
+            target_year: int = year["Year"]
             logger.info(f"Found the target year: {year['Year']}")
             target_year_with_achievements: YearWithAchievements = YearWithAchievements(
                 **year
@@ -89,10 +90,17 @@ def create_user_with_achievements(
                     f"Found existing achievement {json.dumps(user_with_achievements.Years[0].Achievements[0].dict())}"
                 )
                 raise AlreadyExistsError()
+            else:
+                user_with_achievements_with_id: UserWithAchievements = UserWithAchievementsWithId(**user)
+                target_year_with_achievements.Achievements.append(user_with_achievements.Years[0].Achievements[0])
+                for _year in user_with_achievements_with_id.Years:
+                    if _year.Year == target_year:
+                        user_with_achievements_with_id.Years.pop(_year)
+                user_with_achievements_with_id.Years.append(target_year_with_achievements)
 
-    user_with_achievements_with_id = UserWithAchievementsWithId(
-        **user_with_achievements.dict()
-    )
+    # user_with_achievements_with_id = UserWithAchievementsWithId(
+    #     **user_with_achievements.dict()
+    # )
     encoded_user = jsonable_encoder(user_with_achievements_with_id)
     logger.info(
         f"Created user with achievements and id: {json.dumps(encoded_user)}"
