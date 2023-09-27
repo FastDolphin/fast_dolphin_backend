@@ -1,1 +1,2 @@
-from .app import app
+from .parent_training import handle_read_parent_training, handle_write_parent_training
+from .paths import handle_paths

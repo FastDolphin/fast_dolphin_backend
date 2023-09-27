@@ -5,7 +5,12 @@ from pymongo import MongoClient
 from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import dotenv_values
-from .routers import new_requests, training_plans, user_with_achievements
+from .routers import (
+    new_requests,
+    training_plans,
+    user_with_achievements,
+    parent_training,
+)
 
 from pyhere import here
 import sys
@@ -68,6 +73,7 @@ def shutdown_event():
 app.include_router(new_requests.router)
 app.include_router(training_plans.router)
 app.include_router(user_with_achievements.router)
+app.include_router(parent_training.router)
 
 app.add_middleware(
     CORSMiddleware,
