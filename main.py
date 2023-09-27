@@ -3,8 +3,7 @@ import sys
 from mangum import Mangum
 
 sys.path.append(str(here().resolve()))
-
-from handlers import app
+from services import app
 
 
 def handler(event, context):
