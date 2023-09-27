@@ -4,37 +4,7 @@ from model import ParentTraining
 from model.dryland_training_plan import DryLandExercise
 import pytest
 
-#
-# class DryLandExercise(BaseModel):
-#     Name: str
-#     nSets: float
-#     nReps: float
-#     Time: Optional[float] = None
-#     TimeUnits: str = "мин"
-#     Weight: float = 0.0
-#     WeightUnits: str = "кг"
-#     OtherResistance: Optional[str] = None
-#     ResistanceComments: Optional[str] = None
-#     Speed: Optional[int] = None
-#     Comments: Optional[str] = None
-#     TotalExerciseTime: float = 0.0
-#
-#     _AverageRepTime: int = 3
-#     _AverageRepTimeUnits: str = "сек"
-#     _AverageRestTime: int = 60
-#     _AverageRestTimeUnits: str = "сек"
 
-
-#
-# class ParentTraining(BaseModel):
-#     LevelWeekDay: str = None
-#     Level: int
-#     Week: int
-#     Day: int
-#     inGym: bool
-#     Exercises: List[DryLandExercise]
-#     TotalNumberExercises: int = 0
-#     TotalTime: float = 0.0
 @pytest.fixture
 def test_n_sets() -> int:
     return 3
