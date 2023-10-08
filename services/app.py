@@ -1,6 +1,6 @@
 import asyncio
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from pymongo import MongoClient
 from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,6 +10,7 @@ from .routers import (
     training_plans,
     user_with_achievements,
     parent_training,
+    training_report,
 )
 
 from pyhere import here
@@ -26,6 +27,7 @@ MONGO_INITDB_ROOT_PASSWORD = config["MONGO_INITDB_ROOT_PASSWORD"]
 DB_NAME = config["MONGODB_NAME"]
 REQUESTS_COLLECTION = config["REQUESTS_COLLECTION"]
 TRAININGPLANS_COLLECTION = config["TRAININGPLANS_COLLECTION"]
+REPORTS_COLLECTION = config["REPORTS_COLLECTION"]
 USERWITHACHIEVEMENTS_COLLECTION = config["USERWITHACHIEVEMENTS_COLLECTION"]
 MONGO_DETAILS = f"mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/{DB_NAME}?authSource=admin"
 if __STAGE__ == "dev":
@@ -45,6 +47,7 @@ def startup_event():
     app.requests_collection = app.database[REQUESTS_COLLECTION]
     app.trainingplans_collection = app.database[TRAININGPLANS_COLLECTION]
     app.userwithachievements_collection = app.database[USERWITHACHIEVEMENTS_COLLECTION]
+    app.reports_collection = app.database[REPORTS_COLLECTION]
     if __STAGE__ != "dev":
         app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq(
             RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
@@ -74,6 +77,7 @@ app.include_router(new_requests.router)
 app.include_router(training_plans.router)
 app.include_router(user_with_achievements.router)
 app.include_router(parent_training.router)
+app.include_router(training_report.router)
 
 app.add_middleware(
     CORSMiddleware,

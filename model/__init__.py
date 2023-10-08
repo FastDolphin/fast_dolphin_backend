@@ -12,3 +12,4 @@ from .user_with_achievements import (
     UserWithAchievementsWithId,
 )
 from .parent_training import ParentTraining, ParentTrainingWithID
+from .training_report import TrainingReport, TrainingPlanReport, TrainingReportWithId

@@ -1,34 +1,28 @@
-from typing import Any
-
 from fastapi import APIRouter, Response, status, Depends, Request, HTTPException
 from fastapi.encoders import jsonable_encoder
-from bson import ObjectId
 from typing import List
 from pyhere import here
 import sys
 import json
 import pika
-
-sys.path.append(str(here().resolve()))
-
+import logging
 from model import (
     CustomerRequest,
     CustomerRequestWithIdAndTimeStamp,
     RouterOutput,
 )
-
 from utils import WrongEmailFormat, AlreadyExistsError
-
-import logging
 from dotenv import dotenv_values
+
+sys.path.append(str(here().resolve()))
+config = dotenv_values(".env")
+ROUTING_KEY: str = config.get("ROUTING_KEY")
 
 logging.basicConfig(
     format="%(asctime)s %(message)s", level=logging.DEBUG, datefmt="%d-%b-%y %H:%M"
 )
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
-config = dotenv_values(".env")
 
 router = APIRouter(prefix="/v1/new-requests", tags=["customer requests"])
 
@@ -97,7 +91,7 @@ async def create_new_request(
             # Try publishing the message
             request.app.rabbitmq_channel.basic_publish(
                 exchange="",
-                routing_key="notify_admin",
+                routing_key=ROUTING_KEY,
                 body=encoded_new_customer_request_string,
             )
             break  # If successful, exit the loop
