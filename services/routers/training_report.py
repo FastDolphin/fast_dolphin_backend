@@ -33,13 +33,13 @@ async def create_training_report(
     new_training_report: TrainingReport, response: Response, request: Request
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
-    existing_reports = list(
+    existent_reports = list(
         request.app.requests_collection.find(
             {"PlanGroup": new_training_report.PlanGroup}
         )
     )
     encoded_new_report_with_id = prepare_report_with_id_if_not_existent(
-        existing_reports=existing_reports, new_report=new_training_report
+        existent_reports=existent_reports, new_report=new_training_report
     )
     uploaded_report = request.app.reports_collection.insert_one(
         encoded_new_report_with_id
