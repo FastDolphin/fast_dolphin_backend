@@ -49,7 +49,7 @@ class TrainingReport(BaseModel):
     Coach: CoachInfo
     TrainingPlanLevelWeekDay: str
     SwimGroup: SwimGroupInfo
-    PlanGroup: str
+    PlanGroup: Optional[str] = None
     TimeStamp: str = str(time.time())
     Emergency: Optional[Emergency] = None
     Attendance: Optional[Attendance] = None
