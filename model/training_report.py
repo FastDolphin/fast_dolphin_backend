@@ -21,7 +21,7 @@ class TrainingPlanReport(BaseModel):
 
     @validator("notDoneVolumeUnits", pre=True, always=True)
     def check_not_done_volume_units(cls, value):
-        if value not in ["м", "мин"]:
+        if (value is not None) and (value not in ["м", "мин"]):
             raise ValueError("notDoneVolumeUnits must be either 'сек' or 'мин'")
         return value
 
