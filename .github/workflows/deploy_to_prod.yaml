@@ -1,0 +1,36 @@
+name: Deploy to Prod Server
+
+on:
+  merge:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH Keys
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: |
+            ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+            ${{ secrets.DEPLOYMENT_SSH_PRIVATE_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: SSH and Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.PROD_SERVER_IP }}
+          username: root
+          key: ${{ secrets.DEPLOYMENT_SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/fast_dolphin_backend
+            git checkout master
+            eval "$(ssh-agent -s)"
+            ssh-add ~/.ssh/ghactions
+            git pull origin master
+            cd ../fast_dolphin_deployment
+            docker compose down
+            docker compose up -d --build
