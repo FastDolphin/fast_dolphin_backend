@@ -4,14 +4,15 @@ from typing import List
 from pydantic import BaseModel, Field, validator
 
 try:
-    from dryland_training_plan import DryLandExercise
+    from ..dryland_training_plan import DryLandExercise
 except ModuleNotFoundError:
-    from .dryland_training_plan import DryLandExercise
+    from model.dryland_training_plan import DryLandExercise
 
 
-class ParentTraining(BaseModel):
-    LevelWeekDay: str = None
-    Level: int
+class PersonalTraining(BaseModel):
+    TgIdYearWeekDay: str = None
+    TgId: int
+    Year: int
     Week: int
     Day: int
     inGym: bool
@@ -20,8 +21,10 @@ class ParentTraining(BaseModel):
     TotalTime: float = 0.0
     TotalTimeUnits: str = "сек"
 
-    def set_LevelWeekDay(self):
-        self.LevelWeekDay: str = str(self.Level) + str(self.Week) + str(self.Day)
+    def set_TgIdYearWeekDay(self):
+        self.TgIdYearWeekDay = (
+            str(self.TgId) + str(self.Year) + str(self.Week) + str(self.Day)
+        )
 
     def set_total_number_of_exercises(self):
         if self.Exercises:
@@ -39,5 +42,5 @@ class ParentTraining(BaseModel):
         return value
 
 
-class ParentTrainingWithID(ParentTraining):
+class PersonalTrainingWithID(PersonalTraining):
     id: str = Field(default_factory=uuid.uuid4, alias="_id")

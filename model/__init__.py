@@ -11,4 +11,9 @@ from .user_with_achievements import (
     UserWithAchievements,
     UserWithAchievementsWithId,
 )
-from .parent_training import ParentTraining, ParentTrainingWithID
+from .training import (
+    ParentTraining,
+    ParentTrainingWithID,
+    PersonalTraining,
+    PersonalTrainingWithID,
+)
