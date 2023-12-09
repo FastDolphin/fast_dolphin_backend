@@ -10,6 +10,7 @@ from .routers import (
     training_plans,
     user_with_achievements,
     parent_training,
+    personal_training,
 )
 
 from pyhere import here
@@ -27,6 +28,7 @@ DB_NAME = config["MONGODB_NAME"]
 REQUESTS_COLLECTION = config["REQUESTS_COLLECTION"]
 TRAININGPLANS_COLLECTION = config["TRAININGPLANS_COLLECTION"]
 USERWITHACHIEVEMENTS_COLLECTION = config["USERWITHACHIEVEMENTS_COLLECTION"]
+PERSONALTRAINING_COLLECTION = config["PERSONALTRAINING_COLLECTION"]
 MONGO_DETAILS = f"mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/{DB_NAME}?authSource=admin"
 if __STAGE__ == "dev":
     MONGO_DETAILS = "mongodb://localhost:27017"
@@ -45,6 +47,7 @@ def startup_event():
     app.requests_collection = app.database[REQUESTS_COLLECTION]
     app.trainingplans_collection = app.database[TRAININGPLANS_COLLECTION]
     app.userwithachievements_collection = app.database[USERWITHACHIEVEMENTS_COLLECTION]
+    app.personaltraining_collection = app.database[PERSONALTRAINING_COLLECTION]
     if __STAGE__ != "dev":
         app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq(
             RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
@@ -74,6 +77,7 @@ app.include_router(new_requests.router)
 app.include_router(training_plans.router)
 app.include_router(user_with_achievements.router)
 app.include_router(parent_training.router)
+app.include_router(personal_training.router)
 
 app.add_middleware(
     CORSMiddleware,
