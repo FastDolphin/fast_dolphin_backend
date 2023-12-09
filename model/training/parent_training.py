@@ -4,9 +4,9 @@ from typing import List
 from pydantic import BaseModel, Field, validator
 
 try:
-    from dryland_training_plan import DryLandExercise
+    from ..dryland_training_plan import DryLandExercise
 except ModuleNotFoundError:
-    from .dryland_training_plan import DryLandExercise
+    from model.dryland_training_plan import DryLandExercise
 
 
 class ParentTraining(BaseModel):
