@@ -62,7 +62,8 @@ def create_training_plan(
     output = RouterOutput(StatusMessage="Failure")
 
     personal_training.set_TgIdYearWeekDay()
-    personal_training.set_total_volume_and_time()
+    personal_training.set_total_number_of_exercises()
+    personal_training.set_total_training_time()
 
     existing_training_plan = request.app.personaltraining_collection.find_one(
         {"TgIdYearWeekDay": personal_training.TgIdYearWeekDay}
