@@ -1,7 +1,13 @@
 from typing import Optional, Dict, Any, List
 from fastapi import APIRouter, Response, status, Request
 from fastapi.encoders import jsonable_encoder
-from model import PersonalTraining, PersonalTrainingWithID, RouterOutput
+from model import (
+    PersonalTraining,
+    PersonalTrainingWithID,
+    RouterOutput,
+    PersonalTrainingMetaDataWithID,
+    PersonalTrainingMetaData,
+)
 from utils import NotFoundError, AlreadyExistsError
 import logging
 
@@ -123,3 +129,75 @@ async def read_all_personal_trainings(
     output.StatusMessage = "Success"
     response.status_code = status.HTTP_200_OK
     return output
+
+
+@router.get("/metadata", response_model=RouterOutput)
+def read_personal_training_metadata(
+    request: Request,
+    tg_id: int,
+    response: Response,
+    day: Optional[int] = None,
+) -> RouterOutput:
+    output = RouterOutput(StatusMessage="Failure")
+
+    if day is not None:
+        metadata_to_find: Dict[str, str] = {"TgId": str(tg_id)}
+        personal_training_metadata: Dict[
+            str, Any
+        ] = request.app.personaltrainingmetadata_collection.find_one(metadata_to_find)
+
+        if not personal_training_metadata:
+            raise NotFoundError()
+
+        output.Resources.append(PersonalTrainingMetaData(**personal_training_metadata))
+    else:
+        raise NotImplementedError
+
+    output.StatusMessage = "Success"
+    response.status_code = status.HTTP_200_OK
+    return output
+
+
+@router.post("/metadata", response_model=RouterOutput)
+def create_training_plan_metadata(
+    request: Request, metadata: PersonalTrainingMetaData, response: Response
+) -> RouterOutput:
+    output = RouterOutput(StatusMessage="Failure")
+
+    metadata_to_create: Dict[str, str] = {"TgId": str(metadata.TgId)}
+    existing_training_plan = request.app.personaltrainingmetadata_collection.find_one(
+        metadata_to_create
+    )
+    if existing_training_plan:
+        raise AlreadyExistsError()
+
+    metadata_with_id: PersonalTrainingMetaDataWithID = PersonalTrainingMetaDataWithID(
+        **metadata.dict()
+    )
+    encoded_metadata_with_id = jsonable_encoder(metadata_with_id)
+
+    uploaded_metadata = request.app.personaltrainingmetadata_collection.insert_one(
+        encoded_metadata_with_id
+    )
+    created_metadata = request.app.personaltrainingmetadata_collection.find_one(
+        {"_id": uploaded_metadata.inserted_id}
+    )
+
+    output.Resources.append(created_metadata)
+    output.StatusMessage = "Success"
+    response.status_code = status.HTTP_200_OK
+    return output
+
+
+@router.delete("/metadata", response_model=RouterOutput)
+def delete_personal_training_metadata(
+    request: Request, tg_id: int, response: Response
+) -> Response:
+    metadata_to_tg_id: Dict[str, str] = {"TgId": str(tg_id)}
+    delete_result = request.app.personaltrainingmetadata_collection.delete_one(
+        metadata_to_tg_id
+    )
+    if delete_result.deleted_count == 1:
+        response.status_code = status.HTTP_204_NO_CONTENT
+        return response
+    raise NotFoundError()

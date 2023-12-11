@@ -44,3 +44,13 @@ class PersonalTraining(BaseModel):
 
 class PersonalTrainingWithID(PersonalTraining):
     id: str = Field(default_factory=uuid.uuid4, alias="_id")
+
+
+class PersonalTrainingMetaData(BaseModel):
+    TgId: int
+    Year: int
+    Week: int
+
+
+class PersonalTrainingMetaDataWithID(PersonalTrainingMetaData):
+    id: str = Field(default_factory=uuid.uuid4, alias="_id")
