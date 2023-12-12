@@ -16,4 +16,6 @@ from .training import (
     ParentTrainingWithID,
     PersonalTraining,
     PersonalTrainingWithID,
+    PersonalTrainingMetaData,
+    PersonalTrainingMetaDataWithID,
 )
