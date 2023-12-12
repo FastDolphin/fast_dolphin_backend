@@ -49,7 +49,9 @@ def startup_event():
     app.trainingplans_collection = app.database[TRAININGPLANS_COLLECTION]
     app.userwithachievements_collection = app.database[USERWITHACHIEVEMENTS_COLLECTION]
     app.personaltraining_collection = app.database[PERSONALTRAINING_COLLECTION]
-    app.personaltrainingmetadata_collection = app.database[PERSONALTRAININGMETADATA_COLLECTION]
+    app.personaltrainingmetadata_collection = app.database[
+        PERSONALTRAININGMETADATA_COLLECTION
+    ]
     if __STAGE__ != "dev":
         app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq(
             RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
