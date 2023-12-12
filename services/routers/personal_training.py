@@ -140,7 +140,7 @@ def read_personal_training_metadata(
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
 
-    if day is not None:
+    if day is None:
         metadata_to_find: Dict[str, str] = {"TgId": str(tg_id)}
         personal_training_metadata: Dict[
             str, Any
