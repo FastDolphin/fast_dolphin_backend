@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Literal
 from fastapi import APIRouter, Response, status, Request
 from fastapi.encoders import jsonable_encoder
 from model import (
@@ -7,6 +7,8 @@ from model import (
     RouterOutput,
     PersonalTrainingMetaDataWithID,
     PersonalTrainingMetaData,
+    Report,
+    ReportWithId,
 )
 from utils import NotFoundError, AlreadyExistsError
 import logging
@@ -131,7 +133,15 @@ async def read_all_personal_trainings(
     return output
 
 
-@router.get("/metadata", response_model=RouterOutput)
+###############################
+######## METADATA #############
+###############################
+
+
+metadata: Literal["/metadata"] = "/metadata"
+
+
+@router.get(metadata, response_model=RouterOutput)
 def read_personal_training_metadata(
     request: Request,
     tg_id: int,
@@ -158,17 +168,17 @@ def read_personal_training_metadata(
     return output
 
 
-@router.post("/metadata", response_model=RouterOutput)
+@router.post(metadata, response_model=RouterOutput)
 def create_training_plan_metadata(
     request: Request, metadata: PersonalTrainingMetaData, response: Response
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
 
     metadata_to_create: Dict[str, int] = {"TgId": metadata.TgId}
-    existing_training_plan = request.app.personaltrainingmetadata_collection.find_one(
-        metadata_to_create
+    existing_training_plan_metadata = (
+        request.app.personaltrainingmetadata_collection.find_one(metadata_to_create)
     )
-    if existing_training_plan:
+    if existing_training_plan_metadata:
         raise AlreadyExistsError()
 
     metadata_with_id: PersonalTrainingMetaDataWithID = PersonalTrainingMetaDataWithID(
@@ -189,13 +199,92 @@ def create_training_plan_metadata(
     return output
 
 
-@router.delete("/metadata", response_model=RouterOutput)
+@router.delete(metadata, response_model=RouterOutput)
 def delete_personal_training_metadata(
     request: Request, tg_id: int, response: Response
 ) -> Response:
     metadata_to_tg_id: Dict[str, int] = {"TgId": tg_id}
     delete_result = request.app.personaltrainingmetadata_collection.delete_one(
         metadata_to_tg_id
+    )
+    if delete_result.deleted_count == 1:
+        response.status_code = status.HTTP_204_NO_CONTENT
+        return response
+    raise NotFoundError()
+
+
+###############################
+######## REPORT ###############
+###############################
+
+report: Literal["/report"] = "/report"
+
+
+@router.get(report, response_model=RouterOutput)
+def read_personal_training_report(
+    request: Request,
+    tg_id: int,
+    year: int,
+    week: int,
+    response: Response,
+) -> RouterOutput:
+    output = RouterOutput(StatusMessage="Failure")
+
+    tg_id_year_week: str = str(tg_id) + str(year) + str(week)
+
+    report_to_find: Dict[str, str] = {"TgIdYearWeek": tg_id_year_week}
+    personal_training_report: Dict[
+        str, Any
+    ] = request.app.personaltrainingreport_collection.find_one(report_to_find)
+
+    if not personal_training_report:
+        raise NotFoundError()
+
+    output.Resources.append(PersonalTrainingMetaData(**personal_training_report))
+    output.StatusMessage = "Success"
+    response.status_code = status.HTTP_200_OK
+    return output
+
+
+@router.post(report, response_model=RouterOutput)
+def create_training_plan_report(
+    request: Request, report: Report, response: Response
+) -> RouterOutput:
+    output = RouterOutput(StatusMessage="Failure")
+
+    report.set_TgIdYearWeek()
+
+    report_to_create: Dict[str, str] = {"TgIdYearWeek": report.TgIdYearWeek}
+    existing_report = request.app.personaltrainingreport_collection.find_one(
+        report_to_create
+    )
+    if existing_report:
+        raise AlreadyExistsError()
+
+    report_with_id: ReportWithId = ReportWithId(**report.dict())
+    encoded_report_with_id = jsonable_encoder(report_with_id)
+
+    uploaded_report = request.app.personaltrainingreport_collection.insert_one(
+        encoded_report_with_id
+    )
+    created_report = request.app.personaltrainingreport_collection.find_one(
+        {"_id": uploaded_report.inserted_id}
+    )
+
+    output.Resources.append(created_report)
+    output.StatusMessage = "Success"
+    response.status_code = status.HTTP_200_OK
+    return output
+
+
+@router.delete(report, response_model=RouterOutput)
+def delete_personal_training_report(
+    request: Request, tg_id: int, year: int, week: int, response: Response
+) -> Response:
+    tg_id_year_week: str = str(tg_id) + str(year) + str(week)
+    report_to_delete: Dict[str, str] = {"TgIdYearWeek": tg_id_year_week}
+    delete_result = request.app.personaltrainingreport_collection.delete_one(
+        report_to_delete
     )
     if delete_result.deleted_count == 1:
         response.status_code = status.HTTP_204_NO_CONTENT
