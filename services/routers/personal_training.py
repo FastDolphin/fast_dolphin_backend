@@ -240,7 +240,7 @@ def read_personal_training_report(
     if not personal_training_report:
         raise NotFoundError()
 
-    output.Resources.append(PersonalTrainingMetaData(**personal_training_report))
+    output.Resources.append(Report(**personal_training_report))
     output.StatusMessage = "Success"
     response.status_code = status.HTTP_200_OK
     return output
