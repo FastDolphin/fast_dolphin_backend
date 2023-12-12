@@ -141,7 +141,7 @@ def read_personal_training_metadata(
     output = RouterOutput(StatusMessage="Failure")
 
     if day is None:
-        metadata_to_find: Dict[str, str] = {"TgId": str(tg_id)}
+        metadata_to_find: Dict[str, int] = {"TgId": tg_id}
         personal_training_metadata: Dict[
             str, Any
         ] = request.app.personaltrainingmetadata_collection.find_one(metadata_to_find)
@@ -164,7 +164,7 @@ def create_training_plan_metadata(
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
 
-    metadata_to_create: Dict[str, str] = {"TgId": str(metadata.TgId)}
+    metadata_to_create: Dict[str, int] = {"TgId": metadata.TgId}
     existing_training_plan = request.app.personaltrainingmetadata_collection.find_one(
         metadata_to_create
     )
@@ -193,7 +193,7 @@ def create_training_plan_metadata(
 def delete_personal_training_metadata(
     request: Request, tg_id: int, response: Response
 ) -> Response:
-    metadata_to_tg_id: Dict[str, str] = {"TgId": str(tg_id)}
+    metadata_to_tg_id: Dict[str, int] = {"TgId": tg_id}
     delete_result = request.app.personaltrainingmetadata_collection.delete_one(
         metadata_to_tg_id
     )
