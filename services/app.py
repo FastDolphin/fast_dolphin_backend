@@ -48,12 +48,16 @@ def startup_event():
     app.database = app.mongodb_client[DB_NAME]
     app.requests_collection = app.database[REQUESTS_COLLECTION]
     app.trainingplans_collection = app.database[TRAINING_PLANS_COLLECTION]
-    app.userwithachievements_collection = app.database[USER_WITH_ACHIEVEMENTS_COLLECTION]
+    app.userwithachievements_collection = app.database[
+        USER_WITH_ACHIEVEMENTS_COLLECTION
+    ]
     app.personaltraining_collection = app.database[PERSONAL_TRAINING_COLLECTION]
     app.personaltrainingmetadata_collection = app.database[
         PERSONAL_TRAINING_METADATA_COLLECTION
     ]
-    app.personaltrainingreport_collection = app.database[PERSONAL_TRAINING_REPORT_COLLECTION]
+    app.personaltrainingreport_collection = app.database[
+        PERSONAL_TRAINING_REPORT_COLLECTION
+    ]
     if __STAGE__ != "dev":
         app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq(
             RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS

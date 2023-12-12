@@ -7,7 +7,8 @@ from model import (
     RouterOutput,
     PersonalTrainingMetaDataWithID,
     PersonalTrainingMetaData,
-Report, ReportWithId
+    Report,
+    ReportWithId,
 )
 from utils import NotFoundError, AlreadyExistsError
 import logging
@@ -22,12 +23,12 @@ logger.setLevel(logging.DEBUG)
 
 @router.get("/", response_model=RouterOutput)
 def read_personal_training(
-        request: Request,
-        tg_id: int,
-        year: int,
-        week: int,
-        response: Response,
-        day: Optional[int] = None,
+    request: Request,
+    tg_id: int,
+    year: int,
+    week: int,
+    response: Response,
+    day: Optional[int] = None,
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
 
@@ -64,7 +65,7 @@ def read_personal_training(
 
 @router.post("/", response_model=RouterOutput)
 def create_training_plan(
-        request: Request, personal_training: PersonalTraining, response: Response
+    request: Request, personal_training: PersonalTraining, response: Response
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
 
@@ -98,7 +99,7 @@ def create_training_plan(
 
 @router.delete("/", response_model=RouterOutput)
 def delete_personal_training(
-        request: Request, tg_id: int, year: int, week: int, day: int, response: Response
+    request: Request, tg_id: int, year: int, week: int, day: int, response: Response
 ) -> Response:
     tg_id_year_week_day: str = str(tg_id) + str(year) + str(week) + str(day)
 
@@ -115,7 +116,7 @@ def delete_personal_training(
 
 @router.get("/all", response_model=RouterOutput)
 async def read_all_personal_trainings(
-        request: Request, response: Response
+    request: Request, response: Response
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
 
@@ -142,10 +143,10 @@ metadata: Literal["/metadata"] = "/metadata"
 
 @router.get(metadata, response_model=RouterOutput)
 def read_personal_training_metadata(
-        request: Request,
-        tg_id: int,
-        response: Response,
-        day: Optional[int] = None,
+    request: Request,
+    tg_id: int,
+    response: Response,
+    day: Optional[int] = None,
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
 
@@ -169,13 +170,13 @@ def read_personal_training_metadata(
 
 @router.post(metadata, response_model=RouterOutput)
 def create_training_plan_metadata(
-        request: Request, metadata: PersonalTrainingMetaData, response: Response
+    request: Request, metadata: PersonalTrainingMetaData, response: Response
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
 
     metadata_to_create: Dict[str, int] = {"TgId": metadata.TgId}
-    existing_training_plan_metadata = request.app.personaltrainingmetadata_collection.find_one(
-        metadata_to_create
+    existing_training_plan_metadata = (
+        request.app.personaltrainingmetadata_collection.find_one(metadata_to_create)
     )
     if existing_training_plan_metadata:
         raise AlreadyExistsError()
@@ -200,7 +201,7 @@ def create_training_plan_metadata(
 
 @router.delete(metadata, response_model=RouterOutput)
 def delete_personal_training_metadata(
-        request: Request, tg_id: int, response: Response
+    request: Request, tg_id: int, response: Response
 ) -> Response:
     metadata_to_tg_id: Dict[str, int] = {"TgId": tg_id}
     delete_result = request.app.personaltrainingmetadata_collection.delete_one(
@@ -221,11 +222,11 @@ report: Literal["/report"] = "/report"
 
 @router.get(report, response_model=RouterOutput)
 def read_personal_training_report(
-        request: Request,
-        tg_id: int,
-        year: int,
-        week: int,
-        response: Response,
+    request: Request,
+    tg_id: int,
+    year: int,
+    week: int,
+    response: Response,
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
 
@@ -247,7 +248,7 @@ def read_personal_training_report(
 
 @router.post(report, response_model=RouterOutput)
 def create_training_plan_report(
-        request: Request, report: Report, response: Response
+    request: Request, report: Report, response: Response
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
 
@@ -260,9 +261,7 @@ def create_training_plan_report(
     if existing_report:
         raise AlreadyExistsError()
 
-    report_with_id: ReportWithId = ReportWithId(
-        **report.dict()
-    )
+    report_with_id: ReportWithId = ReportWithId(**report.dict())
     encoded_report_with_id = jsonable_encoder(report_with_id)
 
     uploaded_report = request.app.personaltrainingreport_collection.insert_one(
@@ -280,7 +279,7 @@ def create_training_plan_report(
 
 @router.delete(report, response_model=RouterOutput)
 def delete_personal_training_report(
-        request: Request, tg_id: int, year: int, week: int, response: Response
+    request: Request, tg_id: int, year: int, week: int, response: Response
 ) -> Response:
     tg_id_year_week: str = str(tg_id) + str(year) + str(week)
     report_to_delete: Dict[str, str] = {"TgIdYearWeek": tg_id_year_week}
