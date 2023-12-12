@@ -26,10 +26,11 @@ MONGO_INITDB_ROOT_USERNAME = config["MONGO_INITDB_ROOT_USERNAME"]
 MONGO_INITDB_ROOT_PASSWORD = config["MONGO_INITDB_ROOT_PASSWORD"]
 DB_NAME = config["MONGODB_NAME"]
 REQUESTS_COLLECTION = config["REQUESTS_COLLECTION"]
-TRAININGPLANS_COLLECTION = config["TRAININGPLANS_COLLECTION"]
-USERWITHACHIEVEMENTS_COLLECTION = config["USERWITHACHIEVEMENTS_COLLECTION"]
-PERSONALTRAINING_COLLECTION = config["PERSONALTRAINING_COLLECTION"]
-PERSONALTRAININGMETADATA_COLLECTION = config["PERSONALTRAININGMETADATA_COLLECTION"]
+TRAINING_PLANS_COLLECTION = config["TRAININGPLANS_COLLECTION"]
+USER_WITH_ACHIEVEMENTS_COLLECTION = config["USERWITHACHIEVEMENTS_COLLECTION"]
+PERSONAL_TRAINING_COLLECTION = config["PERSONALTRAINING_COLLECTION"]
+PERSONAL_TRAINING_METADATA_COLLECTION = config["PERSONALTRAININGMETADATA_COLLECTION"]
+PERSONAL_TRAINING_REPORT_COLLECTION = config["PERSONALTRAININGREPORT_COLLECTION"]
 MONGO_DETAILS = f"mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/{DB_NAME}?authSource=admin"
 if __STAGE__ == "dev":
     MONGO_DETAILS = "mongodb://localhost:27017"
@@ -46,12 +47,13 @@ def startup_event():
     app.mongodb_client = MongoClient(MONGO_DETAILS)
     app.database = app.mongodb_client[DB_NAME]
     app.requests_collection = app.database[REQUESTS_COLLECTION]
-    app.trainingplans_collection = app.database[TRAININGPLANS_COLLECTION]
-    app.userwithachievements_collection = app.database[USERWITHACHIEVEMENTS_COLLECTION]
-    app.personaltraining_collection = app.database[PERSONALTRAINING_COLLECTION]
+    app.trainingplans_collection = app.database[TRAINING_PLANS_COLLECTION]
+    app.userwithachievements_collection = app.database[USER_WITH_ACHIEVEMENTS_COLLECTION]
+    app.personaltraining_collection = app.database[PERSONAL_TRAINING_COLLECTION]
     app.personaltrainingmetadata_collection = app.database[
-        PERSONALTRAININGMETADATA_COLLECTION
+        PERSONAL_TRAINING_METADATA_COLLECTION
     ]
+    app.personaltrainingreport_collection = app.database[PERSONAL_TRAINING_REPORT_COLLECTION]
     if __STAGE__ != "dev":
         app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq(
             RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS

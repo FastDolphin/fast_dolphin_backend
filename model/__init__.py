@@ -19,3 +19,5 @@ from .training import (
     PersonalTrainingMetaData,
     PersonalTrainingMetaDataWithID,
 )
+
+from .report import Report, ReportWithId
