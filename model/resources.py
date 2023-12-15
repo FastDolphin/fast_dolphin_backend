@@ -1,5 +1,7 @@
 import uuid
 import time
+from typing import List, Any
+
 from pydantic import BaseModel, Field
 import datetime
 from pyhere import here
@@ -10,7 +12,7 @@ sys.path.append(str(here().resolve()))
 
 
 class RouterOutput(BaseModel):
-    Resources: list = []
+    Resources: List[Any] = []
     StatusMessage: str = None
     ErrorMessage: str = None
 
