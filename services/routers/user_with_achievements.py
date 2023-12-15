@@ -107,6 +107,7 @@ def update_user_with_achievements(
         {"TGid": user_with_achievements.TGid}
     )
     logger.info(f"Found existing_user: {json.dumps(existing_user)}")
+    user_with_achievements_with_id: UserWithAchievementsWithId
     if existing_user:
         years_with_achievements: List[Dict[str, Any]] = existing_user[
             "YearsWithAchievements"
@@ -121,8 +122,8 @@ def update_user_with_achievements(
                 logger.info(
                     f"Initialized target year with achievements: {json.dumps(year)}"
                 )
-                user_with_achievements_with_id: UserWithAchievements = (
-                    UserWithAchievementsWithId(**existing_user)
+                user_with_achievements_with_id = UserWithAchievementsWithId(
+                    **existing_user
                 )
                 target_year_with_achievements.Achievements.append(
                     user_with_achievements.YearsWithAchievements[0].Achievements[0]
@@ -136,8 +137,8 @@ def update_user_with_achievements(
                     target_year_with_achievements
                 )
             else:
-                user_with_achievements_with_id: UserWithAchievements = (
-                    UserWithAchievementsWithId(**existing_user)
+                user_with_achievements_with_id = UserWithAchievementsWithId(
+                    **existing_user
                 )
                 user_with_achievements_with_id.YearsWithAchievements.append(
                     user_with_achievements.YearsWithAchievements[0]
@@ -152,9 +153,15 @@ def update_user_with_achievements(
                 encoded_existing_user, encoded_user
             )
             if result.matched_count == 0:
-                raise NotFoundError()
+                output.StatusMessage = "Failure"
+                output.ErrorMessage = "Achievements don't exist!"
+                response.status_code = status.HTTP_404_NOT_FOUND
+                return output
             elif result.modified_count == 0:
-                raise NotUpdatedError()
+                output.StatusMessage = "Failure"
+                output.ErrorMessage = "Achievements are not updated"
+                response.status_code = status.HTTP_409_CONFLICT
+                return output
             else:
                 updated_user_with_achievements = (
                     request.app.userwithachievements_collection.find_one(
@@ -166,7 +173,10 @@ def update_user_with_achievements(
             response.status_code = status.HTTP_200_OK
             return output
     else:
-        raise NotFoundError()
+        output.StatusMessage = "Failure"
+        output.ErrorMessage = "User doesn't exist!"
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return output
 
 
 @router.delete("/", response_model=RouterOutput)

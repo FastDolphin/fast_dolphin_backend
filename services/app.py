@@ -1,8 +1,8 @@
 import asyncio
 
+
 from fastapi import FastAPI, Depends
 from pymongo import MongoClient
-from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import dotenv_values
 from .routers import (
@@ -11,14 +11,18 @@ from .routers import (
     user_with_achievements,
     parent_training,
     personal_training,
+    authorization,
+    allowed,
 )
 
-from pyhere import here
+from pyhere import here  # type: ignore
 import sys
 
 sys.path.append(str(here().resolve()))
 
 from utils import CorsConstants, connect_to_rabbitmq
+from .auth import get_client_api_key, get_admin_api_key
+
 
 config = dotenv_values(".env")
 __STAGE__ = config.get("__STAGE__", "prod")
@@ -87,7 +91,9 @@ app.include_router(new_requests.router)
 app.include_router(training_plans.router)
 app.include_router(user_with_achievements.router)
 app.include_router(parent_training.router)
-app.include_router(personal_training.router)
+app.include_router(allowed.router)
+app.include_router(personal_training.router, dependencies=[Depends(get_client_api_key)])
+app.include_router(authorization.router, dependencies=[Depends(get_admin_api_key)])
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Response, status, Request, HTTPException
 from fastapi.encoders import jsonable_encoder
 from typing import List
-from pyhere import here
+from pyhere import here  # type: ignore
 import sys
 import json
-import pika
+import pika  # type: ignore
 
 sys.path.append(str(here().resolve()))
 

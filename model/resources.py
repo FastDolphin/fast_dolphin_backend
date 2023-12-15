@@ -1,10 +1,9 @@
 import uuid
 import time
-from typing import List, Any
-
+from typing import List, Any, Union, Literal
 from pydantic import BaseModel, Field
 import datetime
-from pyhere import here
+from pyhere import here  # type: ignore
 import sys
 import re
 
@@ -13,8 +12,8 @@ sys.path.append(str(here().resolve()))
 
 class RouterOutput(BaseModel):
     Resources: List[Any] = []
-    StatusMessage: str = None
-    ErrorMessage: str = None
+    StatusMessage: Union[Literal["Success"], Literal["Failure"]] = "Failure"
+    ErrorMessage: str = ""
 
 
 class CustomerRequest(BaseModel):
@@ -37,7 +36,7 @@ class CustomerRequest(BaseModel):
 
 
 class CustomerRequestWithId(CustomerRequest):
-    id: str = Field(default_factory=uuid.uuid4, alias="_id")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), alias="_id")
 
 
 class CustomerRequestWithIdAndTimeStamp(CustomerRequestWithId):

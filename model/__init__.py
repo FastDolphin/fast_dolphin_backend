@@ -21,3 +21,10 @@ from .training import (
 )
 
 from .report import Report, ReportWithId
+from .authorization import (
+    APIKey,
+    APIKeyWithId,
+    APIKeyResponse,
+    APIKeyRequest,
+    APIKeyMetadata,
+)

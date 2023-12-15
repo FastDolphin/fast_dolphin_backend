@@ -1,5 +1,5 @@
 import time
-import pika
+import pika  # type: ignore
 
 
 def connect_to_rabbitmq(rabbitmq_host, rabbitmq_user, rabbitmq_pass):

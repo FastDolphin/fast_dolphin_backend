@@ -1,7 +1,7 @@
 name: lint+pytest
 on:
   pull_request:
-    branches: [master, 28_troubleshooting_learning_issues, 58_encode_images_separately]
+    branches: [master]
 
 jobs:
   # checking python black linting
@@ -34,3 +34,5 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Test with pytest
         run: pytest
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}

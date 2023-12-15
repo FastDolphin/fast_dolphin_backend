@@ -17,6 +17,6 @@ def handle_read_parent_training(parent_training_path: str) -> ParentTraining:
 def handle_write_parent_training(
     parent_training_path: str, parent_training: ParentTraining
 ) -> None:
-    parent_training_dump: Dict[str, Any] = json.dumps(parent_training.dict())
+    parent_training_dump: str = json.dumps(parent_training.dict())
     with open(parent_training_path, "w") as file:
         file.write(parent_training_dump)
