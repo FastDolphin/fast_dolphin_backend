@@ -2,9 +2,11 @@ from fastapi import Request, Security, HTTPException, status
 from fastapi.security import APIKeyHeader
 from typeguard import typechecked
 from datetime import datetime
-from dotenv import dotenv_values
+from dotenv import load_dotenv
+import os
 
-config = dotenv_values(".env")
+load_dotenv()
+
 api_key_header = APIKeyHeader(name="X-API-Key")
 
 
@@ -32,7 +34,7 @@ def get_client_api_key(
 
 @typechecked
 def is_admin_user(token: str) -> bool:
-    return token == config["ADMIN_TOKEN"]
+    return token == os.environ["ADMIN_TOKEN"]
 
 
 @typechecked
