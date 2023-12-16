@@ -12,7 +12,7 @@ class Achievement(BaseModel):
 
 class YearWithAchievements(BaseModel):
     Year: int
-    Achievements: List[Achievement] = None
+    Achievements: List[Achievement] = Field(default_factory=list)
 
 
 class UserWithAchievements(BaseModel):
@@ -24,4 +24,4 @@ class UserWithAchievements(BaseModel):
 
 
 class UserWithAchievementsWithId(UserWithAchievements):
-    id: str = Field(default_factory=uuid.uuid4, alias="_id")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), alias="_id")

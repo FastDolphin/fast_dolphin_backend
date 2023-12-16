@@ -1,5 +1,5 @@
 import uuid
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field, validator
 
@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 
 
 class ParentTraining(BaseModel):
-    LevelWeekDay: str = None
+    LevelWeekDay: Optional[str] = None
     Level: int
     Week: int
     Day: int

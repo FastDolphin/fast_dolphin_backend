@@ -4,7 +4,7 @@ from typing import Final, Tuple
 
 @dataclass
 class CorsConstants:
-    DEV_ORIGINS: Final[Tuple[str]] = (
+    DEV_ORIGINS: Final[Tuple[str, str, str, str, str, str]] = (
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://65.21.50.112:3000",
@@ -12,7 +12,7 @@ class CorsConstants:
         "https://fast-dolphin.com",
         "https://www.fast-dolphin.com",
     )
-    DEV_HEADERS: Final[Tuple[str]] = (
+    DEV_HEADERS: Final[Tuple[str, str, str, str, str, str, str, str, str, str]] = (
         "Content-Type",
         "X-Amz-Date",
         "X-Amz-Security-Token",
@@ -24,7 +24,7 @@ class CorsConstants:
         "Access-Control-Allow-Origin",
         "Access-Control-Allow-Headers",
     )
-    METHODS: Final[Tuple[str]] = (
+    METHODS: Final[Tuple[str, str, str, str, str, str, str]] = (
         "GET",
         "OPTIONS",
         "POST",

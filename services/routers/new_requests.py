@@ -1,13 +1,10 @@
-from typing import Any
-
-from fastapi import APIRouter, Response, status, Depends, Request, HTTPException
+from fastapi import APIRouter, Response, status, Request, HTTPException
 from fastapi.encoders import jsonable_encoder
-from bson import ObjectId
 from typing import List
-from pyhere import here
+from pyhere import here  # type: ignore
 import sys
 import json
-import pika
+import pika  # type: ignore
 
 sys.path.append(str(here().resolve()))
 
@@ -16,9 +13,7 @@ from model import (
     CustomerRequestWithIdAndTimeStamp,
     RouterOutput,
 )
-
 from utils import WrongEmailFormat, AlreadyExistsError
-
 import logging
 from dotenv import dotenv_values
 

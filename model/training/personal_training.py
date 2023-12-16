@@ -1,5 +1,5 @@
 import uuid
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field, validator
 
@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 
 
 class PersonalTraining(BaseModel):
-    TgIdYearWeekDay: str = None
+    TgIdYearWeekDay: Optional[str] = None
     TgId: int
     Year: int
     Week: int
@@ -53,4 +53,4 @@ class PersonalTrainingMetaData(BaseModel):
 
 
 class PersonalTrainingMetaDataWithID(PersonalTrainingMetaData):
-    id: str = Field(default_factory=uuid.uuid4, alias="_id")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4), alias="_id")

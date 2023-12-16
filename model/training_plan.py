@@ -17,15 +17,15 @@ class Exercise(BaseModel):
     Time: Optional[float]
     TimeUnits: str = "min"
     Stroke: str
-    Speed: int = None
+    Speed: Optional[int] = None
     Legs: bool = False
     Arms: bool = False
-    Equipment: Optional[Equipment]
-    Comments: Optional[str]
+    Equipment: Optional[Equipment] = None
+    Comments: Optional[str] = None
 
 
 class TrainingPlan(BaseModel):
-    LevelWeekDay: str = None
+    LevelWeekDay: Optional[str] = None
     Level: int
     Week: int
     Day: int
@@ -48,4 +48,4 @@ class TrainingPlan(BaseModel):
 
 
 class TrainingPlanWithId(TrainingPlan):
-    id: str = Field(default_factory=uuid.uuid4, alias="_id")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), alias="_id")
