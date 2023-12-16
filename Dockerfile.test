@@ -31,9 +31,11 @@ ENV MONGODB_NAME=$MONGODB_NAME
 ENV RABBITMQ_DEFAULT_USER=$RABBITMQ_DEFAULT_USER
 ENV RABBITMQ_DEFAULT_PASS=$RABBITMQ_DEFAULT_PASS
 ENV RABBITMQ_HOST=$RABBITMQ_HOST
+ENV ADMIN_TOKEN=$ADMIN_TOKEN
+
 
 # Expose the port that the FastAPI app runs on
 EXPOSE 8000
 
 # Run the FastAPI app
-CMD bash -c "env > /app/.env && exec uvicorn main:app --host 0.0.0.0 --port 8000"
+CMD ["python", "main.py"]
