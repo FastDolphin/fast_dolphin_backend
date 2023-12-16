@@ -8,7 +8,7 @@ class Equipment(BaseModel):
     KickBoard: bool = False
     PullBuoy: bool = False
     Snorkel: bool = False
-    Other: Optional[str]
+    Other: str = ""
 
 
 class Exercise(BaseModel):
@@ -20,8 +20,8 @@ class Exercise(BaseModel):
     Speed: Optional[int] = None
     Legs: bool = False
     Arms: bool = False
-    Equipment: Optional[Equipment] = None
-    Comments: Optional[str] = None
+    Equipment: Equipment
+    Comments: str = ""
 
 
 class TrainingPlan(BaseModel):
