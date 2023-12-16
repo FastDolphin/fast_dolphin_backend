@@ -1,10 +1,9 @@
+import os
 import asyncio
-
-
 from fastapi import FastAPI, Depends
 from pymongo import MongoClient
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 from .routers import (
     new_requests,
     training_plans,
@@ -14,7 +13,6 @@ from .routers import (
     authorization,
     allowed,
 )
-
 from pyhere import here  # type: ignore
 import sys
 
@@ -23,24 +21,26 @@ sys.path.append(str(here().resolve()))
 from utils import CorsConstants, connect_to_rabbitmq
 from .auth import get_client_api_key, get_admin_api_key
 
+load_dotenv()
 
-config = dotenv_values(".env")
-__STAGE__ = config.get("__STAGE__", "prod")
-MONGO_INITDB_ROOT_USERNAME = config["MONGO_INITDB_ROOT_USERNAME"]
-MONGO_INITDB_ROOT_PASSWORD = config["MONGO_INITDB_ROOT_PASSWORD"]
-DB_NAME = config["MONGODB_NAME"]
-REQUESTS_COLLECTION = config["REQUESTS_COLLECTION"]
-TRAINING_PLANS_COLLECTION = config["TRAININGPLANS_COLLECTION"]
-USER_WITH_ACHIEVEMENTS_COLLECTION = config["USERWITHACHIEVEMENTS_COLLECTION"]
-PERSONAL_TRAINING_COLLECTION = config["PERSONALTRAINING_COLLECTION"]
-PERSONAL_TRAINING_METADATA_COLLECTION = config["PERSONALTRAININGMETADATA_COLLECTION"]
-PERSONAL_TRAINING_REPORT_COLLECTION = config["PERSONALTRAININGREPORT_COLLECTION"]
+__STAGE__ = os.getenv("__STAGE__", "prod")
+MONGO_INITDB_ROOT_USERNAME = os.environ["MONGO_INITDB_ROOT_USERNAME"]
+MONGO_INITDB_ROOT_PASSWORD = os.environ["MONGO_INITDB_ROOT_PASSWORD"]
+DB_NAME = os.environ["MONGODB_NAME"]
+REQUESTS_COLLECTION = os.environ["REQUESTS_COLLECTION"]
+TRAINING_PLANS_COLLECTION = os.environ["TRAININGPLANS_COLLECTION"]
+USER_WITH_ACHIEVEMENTS_COLLECTION = os.environ["USERWITHACHIEVEMENTS_COLLECTION"]
+PERSONAL_TRAINING_COLLECTION = os.environ["PERSONALTRAINING_COLLECTION"]
+PERSONAL_TRAINING_METADATA_COLLECTION = os.environ[
+    "PERSONALTRAININGMETADATA_COLLECTION"
+]
+PERSONAL_TRAINING_REPORT_COLLECTION = os.environ["PERSONALTRAININGREPORT_COLLECTION"]
 MONGO_DETAILS = f"mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/{DB_NAME}?authSource=admin"
 if __STAGE__ == "dev":
     MONGO_DETAILS = "mongodb://localhost:27017"
-RABBITMQ_DEFAULT_USER = config["RABBITMQ_DEFAULT_USER"]
-RABBITMQ_DEFAULT_PASS = config["RABBITMQ_DEFAULT_PASS"]
-RABBITMQ_HOST = config["RABBITMQ_HOST"]
+RABBITMQ_DEFAULT_USER = os.environ["RABBITMQ_DEFAULT_USER"]
+RABBITMQ_DEFAULT_PASS = os.environ["RABBITMQ_DEFAULT_PASS"]
+RABBITMQ_HOST = os.environ["RABBITMQ_HOST"]
 
 app = FastAPI()
 
