@@ -97,10 +97,6 @@ async def update_tg_id_in_training_plan(
             **personal_training
         )
         personal_trainings_no_tg_id.append(personal_training_no_tg_id)
-        import pdb
-
-        pdb.set_trace()
-
         personal_training_with_tg_id: PersonalTrainingWithID = (
             personal_training_no_tg_id.copy(deep=True)
         )
