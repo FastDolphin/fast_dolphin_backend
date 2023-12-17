@@ -1,5 +1,3 @@
-from typing import Optional, Dict, Any
-
 from pydantic import BaseModel, Field
 import uuid
 
@@ -8,6 +6,7 @@ class APIKeyMetadata(BaseModel):
     Name: str
     Surname: str
     Days: int
+    TgId: int = 0
 
 
 class APIKeyRequest(BaseModel):
