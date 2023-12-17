@@ -1,5 +1,7 @@
 from typing import Optional, Dict, Any, List, Literal
-from fastapi import APIRouter, Response, status, Request
+
+from bson import ObjectId
+from fastapi import APIRouter, Response, status, Request, HTTPException
 from fastapi.encoders import jsonable_encoder
 from model import (
     PersonalTraining,
@@ -65,7 +67,7 @@ def read_personal_training(
                 return output
 
         for personal_training in matching_personal_trainings:
-            output.Resources.append(PersonalTraining(**personal_training))
+            output.Resources.append(PersonalTrainingWithID(**personal_training))
         output.Resources.sort(key=lambda x: x.Day)
 
     output.StatusMessage = "Success"
@@ -165,19 +167,17 @@ def create_training_plan(
 
 @router.delete("/", response_model=RouterOutput)
 def delete_personal_training(
-    request: Request, tg_id: int, year: int, week: int, day: int, response: Response
-) -> Response:
-    tg_id_year_week_day: str = str(tg_id) + str(year) + str(week) + str(day)
-
-    delete_result = request.app.personaltraining_collection.delete_one(
-        {"TgIdLevelWeekDay": tg_id_year_week_day}
-    )
-
-    if delete_result.deleted_count == 1:
-        response.status_code = status.HTTP_204_NO_CONTENT
-        return response
-
-    raise NotFoundError()
+    request: Request, id: str, response: Response
+) -> RouterOutput:
+    output = RouterOutput(StatusMessage="Failure")
+    delete_result = request.app.personaltraining_collection.delete_one({"_id": id})
+    if delete_result.deleted_count == 0:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        output.ErrorMessage = "Personal training is not found."
+        return output
+    response.status_code = status.HTTP_200_OK
+    output.StatusMessage = "Success"
+    return output
 
 
 @router.get("/all", response_model=RouterOutput)
