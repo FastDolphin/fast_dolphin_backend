@@ -6,7 +6,7 @@ from datetime import datetime
 
 from fastapi.encoders import jsonable_encoder
 
-from model import APIKey, APIKeyResponse, RouterOutput, APIKeyMetadata
+from model import APIKey, APIKeyResponse, RouterOutput, APIKeyMetadata, APIKeyWithId
 from ..auth import is_admin_user
 
 logging.basicConfig(
@@ -64,12 +64,12 @@ async def is_api_key_allowed(
         authorization_collection.find({"ApiKey": api_key})
     )
     if all_existing_keys_of_this_user:
-        found_keys: List[APIKey] = [
-            APIKey(**found_key) for found_key in all_existing_keys_of_this_user
+        found_keys: List[APIKeyWithId] = [
+            APIKeyWithId(**found_key) for found_key in all_existing_keys_of_this_user
         ]
         for key in found_keys:
             if key.ApiKey == api_key and key.ExpiresAt > datetime.now().isoformat():
-                old_key: APIKey = key
+                old_key: APIKeyWithId = key
                 key.Metadata.TgId = tg_id
 
                 encoded_updated_api_key = jsonable_encoder(key)
