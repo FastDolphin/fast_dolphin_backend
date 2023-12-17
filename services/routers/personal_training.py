@@ -31,19 +31,15 @@ def read_personal_training(
     day: Optional[int] = None,
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
-
+    existing_personal_training: Dict[str, Any]
     if day is not None:
         tg_id_year_week_day: str = str(tg_id) + str(year) + str(week) + str(day)
 
-        existing_personal_training: Dict[
-            str, Any
-        ] = request.app.personaltraining_collection.find_one(
+        existing_personal_training = request.app.personaltraining_collection.find_one(
             {"TgIdYearWeekDay": tg_id_year_week_day}
         )
-
         if not existing_personal_training:
             raise NotFoundError()
-
         output.Resources.append(PersonalTraining(**existing_personal_training))
     else:
         # If day is not provided, fetch all training plans for the specified level and week
@@ -51,8 +47,22 @@ def read_personal_training(
         matching_personal_trainings = request.app.personaltraining_collection.find(
             {"TgIdYearWeekDay": {"$regex": f"^{tg_id_year_week_prefix}"}}
         )
+        matching_personal_trainings = list(matching_personal_trainings)
         if not matching_personal_trainings:
-            raise NotFoundError()
+            api_key_year_week_prefix: str = (
+                str(request.headers.get("X-Api-Key")) + str(year) + str(week)
+            )
+            matching_personal_trainings = request.app.personaltraining_collection.find(
+                {"ApiKeyYearWeekDay": {"$regex": f"^{api_key_year_week_prefix}"}}
+            )
+            matching_personal_trainings = list(matching_personal_trainings)
+            if not matching_personal_trainings:
+                output.ErrorMessage = (
+                    "Personal training wasn't found with neither the TgId nor ApiKey."
+                )
+                output.StatusMessage = "Failure"
+                response.status_code = status.HTTP_404_NOT_FOUND
+                return output
 
         for personal_training in matching_personal_trainings:
             output.Resources.append(PersonalTraining(**personal_training))
@@ -60,6 +70,63 @@ def read_personal_training(
 
     output.StatusMessage = "Success"
     response.status_code = status.HTTP_200_OK
+    return output
+
+
+@router.put("/telegram_id", response_model=RouterOutput)
+async def update_tg_id_in_training_plan(
+    request: Request, tg_id: int, year: int, week: int, response: Response
+) -> RouterOutput:
+    output = RouterOutput(StatusMessage="Failure")
+    api_key_year_week_prefix: str = (
+        str(request.headers.get("X-Api-Key")) + str(year) + str(week)
+    )
+    matching_personal_trainings = request.app.personaltraining_collection.find(
+        {"ApiKeyYearWeekDay": {"$regex": f"^{api_key_year_week_prefix}"}}
+    )
+    matching_personal_trainings = list(matching_personal_trainings)
+    if not matching_personal_trainings:
+        output.ErrorMessage = "Personal training wasn't found with ApiKey."
+        output.StatusMessage = "Failure"
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return output
+    personal_trainings_no_tg_id: List[PersonalTrainingWithID] = []
+    personal_trainings_with_tg_id: List[PersonalTrainingWithID] = []
+    for personal_training in matching_personal_trainings:
+        personal_training_no_tg_id: PersonalTrainingWithID = PersonalTrainingWithID(
+            **personal_training
+        )
+        personal_trainings_no_tg_id.append(personal_training_no_tg_id)
+        import pdb
+
+        pdb.set_trace()
+
+        personal_training_with_tg_id: PersonalTrainingWithID = (
+            personal_training_no_tg_id.copy(deep=True)
+        )
+        personal_training_with_tg_id.TgId = tg_id
+        personal_training_with_tg_id.set_TgIdYearWeekDay()
+        personal_trainings_with_tg_id.append(personal_training_with_tg_id)
+        for old, new in zip(personal_trainings_no_tg_id, personal_trainings_with_tg_id):
+            old_encoded = jsonable_encoder(old)
+            new_encoded = jsonable_encoder(new)
+            result = request.app.personaltraining_collection.replace_one(
+                old_encoded, new_encoded
+            )
+
+            if result.matched_count == 0:
+                output.ErrorMessage = "No match for API Key."
+                response.status_code = status.HTTP_409_CONFLICT
+                return output
+            elif result.modified_count == 0:
+                output.ErrorMessage = "API key was not modified"
+                response.status_code = status.HTTP_409_CONFLICT
+                return output
+            else:
+                response.status_code = status.HTTP_200_OK
+                output.StatusMessage = "Success"
+                output.Resources.append(new)
+                output.ErrorMessage = ""
     return output
 
 
@@ -72,6 +139,9 @@ def create_training_plan(
     personal_training.set_TgIdYearWeekDay()
     personal_training.set_total_number_of_exercises()
     personal_training.set_total_training_time()
+
+    if personal_training.ApiKey:
+        personal_training.set_ApiKeyYearWeekDay()
 
     existing_training_plan = request.app.personaltraining_collection.find_one(
         {"TgIdYearWeekDay": personal_training.TgIdYearWeekDay}

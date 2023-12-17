@@ -11,7 +11,9 @@ except ModuleNotFoundError:
 
 class PersonalTraining(BaseModel):
     TgIdYearWeekDay: Optional[str] = None
-    TgId: int
+    ApiKeyYearWeekDay: Optional[str] = None
+    TgId: int = 0
+    ApiKey: str = ""
     Year: int
     Week: int
     Day: int
@@ -24,6 +26,11 @@ class PersonalTraining(BaseModel):
     def set_TgIdYearWeekDay(self):
         self.TgIdYearWeekDay = (
             str(self.TgId) + str(self.Year) + str(self.Week) + str(self.Day)
+        )
+
+    def set_ApiKeyYearWeekDay(self):
+        self.ApiKeyYearWeekDay = (
+            str(self.ApiKey) + str(self.Year) + str(self.Week) + str(self.Day)
         )
 
     def set_total_number_of_exercises(self):
