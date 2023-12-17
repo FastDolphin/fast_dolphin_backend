@@ -1,5 +1,7 @@
 import logging
 from typing import List, Dict, Any
+
+from bson import ObjectId
 from dotenv import dotenv_values
 from fastapi import APIRouter, Request, Response, status
 from datetime import datetime
@@ -64,16 +66,20 @@ async def is_api_key_allowed(
         authorization_collection.find({"ApiKey": api_key})
     )
     if all_existing_keys_of_this_user:
-        found_keys: List[APIKeyWithId] = [
-            APIKeyWithId(**found_key) for found_key in all_existing_keys_of_this_user
-        ]
-        for key in found_keys:
+        for key in all_existing_keys_of_this_user:
+            key["_id"] = str(key["_id"])
+            key = APIKeyWithId(**key)
             if key.ApiKey == api_key and key.ExpiresAt > datetime.now().isoformat():
-                old_key: APIKeyWithId = key
-                key.Metadata.TgId = tg_id
-
-                encoded_updated_api_key = jsonable_encoder(key)
-                encoded_existing_api_key = jsonable_encoder(old_key)
+                new_key = key.copy(deep=True)
+                new_key.Metadata.TgId = tg_id
+                encoded_updated_api_key = jsonable_encoder(new_key)
+                encoded_updated_api_key["_id"] = ObjectId(
+                    encoded_updated_api_key["_id"]
+                )
+                encoded_existing_api_key = jsonable_encoder(key)
+                encoded_existing_api_key["_id"] = ObjectId(
+                    encoded_existing_api_key["_id"]
+                )
 
                 result = authorization_collection.replace_one(
                     encoded_existing_api_key, encoded_updated_api_key
@@ -87,6 +93,6 @@ async def is_api_key_allowed(
                 else:
                     response.status_code = status.HTTP_200_OK
                     output.StatusMessage = "Success"
-                    output.Resources.append(key.Metadata)
+                    output.Resources.append(new_key.Metadata)
                     output.ErrorMessage = ""
     return output
