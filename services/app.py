@@ -1,3 +1,4 @@
+import json
 import os
 import asyncio
 from fastapi import FastAPI, Depends
@@ -12,6 +13,7 @@ from .routers import (
     personal_training,
     authorization,
     allowed,
+    messages,
 )
 from pyhere import here  # type: ignore
 import sys
@@ -34,6 +36,7 @@ PERSONAL_TRAINING_COLLECTION = os.environ["PERSONALTRAINING_COLLECTION"]
 PERSONAL_TRAINING_METADATA_COLLECTION = os.environ[
     "PERSONALTRAININGMETADATA_COLLECTION"
 ]
+MESSAGES_COLLECTION = os.environ["MESSAGES_COLLECTION"]
 PERSONAL_TRAINING_REPORT_COLLECTION = os.environ["PERSONALTRAININGREPORT_COLLECTION"]
 MONGO_DETAILS = f"mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/{DB_NAME}?authSource=admin"
 if __STAGE__ == "dev":
@@ -62,6 +65,7 @@ def startup_event():
     app.personaltrainingreport_collection = app.database[
         PERSONAL_TRAINING_REPORT_COLLECTION
     ]
+    app.messages_collection = app.database[MESSAGES_COLLECTION]
     if __STAGE__ != "dev":
         app.rabbitmq_connection, app.rabbitmq_channel = connect_to_rabbitmq(
             RABBITMQ_HOST, RABBITMQ_DEFAULT_USER, RABBITMQ_DEFAULT_PASS
@@ -93,6 +97,7 @@ app.include_router(user_with_achievements.router)
 app.include_router(parent_training.router)
 app.include_router(allowed.router)
 app.include_router(personal_training.router, dependencies=[Depends(get_client_api_key)])
+app.include_router(messages.router, dependencies=[Depends(get_client_api_key)])
 app.include_router(authorization.router, dependencies=[Depends(get_admin_api_key)])
 
 app.add_middleware(
