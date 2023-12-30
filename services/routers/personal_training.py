@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any, List, Literal
+from typing import Optional, Dict, Any, List, Literal, Union
 
 from bson import ObjectId
 from fastapi import APIRouter, Response, status, Request, HTTPException
@@ -225,7 +225,9 @@ def read_personal_training_metadata(
         if not personal_training_metadata:
             raise NotFoundError()
 
-        output.Resources.append(PersonalTrainingMetaData(**personal_training_metadata))
+        output.Resources.append(
+            PersonalTrainingMetaDataWithID(**personal_training_metadata)
+        )
     else:
         raise NotImplementedError
 
@@ -267,12 +269,24 @@ def create_training_plan_metadata(
 
 @router.delete(metadata, response_model=RouterOutput)
 def delete_personal_training_metadata(
-    request: Request, tg_id: int, response: Response
+    request: Request,
+    response: Response,
+    tg_id: Optional[int] = None,
+    mtdata_id: Optional[str] = None,
 ) -> Response:
-    metadata_to_tg_id: Dict[str, int] = {"TgId": tg_id}
-    delete_result = request.app.personaltrainingmetadata_collection.delete_one(
-        metadata_to_tg_id
-    )
+    del_d: Union[Dict[str, int], Dict[str, str]]
+    if tg_id:
+        del_d = {"TgId": tg_id}
+
+    elif mtdata_id:
+        del_d = {"_id": mtdata_id}
+
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Either telegram id or metadata id should be provided",
+        )
+    delete_result = request.app.personaltrainingmetadata_collection.delete_one(del_d)
     if delete_result.deleted_count == 1:
         response.status_code = status.HTTP_204_NO_CONTENT
         return response
