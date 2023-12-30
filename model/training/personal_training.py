@@ -60,4 +60,4 @@ class PersonalTrainingMetaData(BaseModel):
 
 
 class PersonalTrainingMetaDataWithID(PersonalTrainingMetaData):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4), alias="_id")
+    id: str = Field(default_factory=uuid.uuid4, alias="_id")
