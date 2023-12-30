@@ -1,6 +1,4 @@
 from typing import Optional, Dict, Any, List, Literal, Union
-
-from bson import ObjectId
 from fastapi import APIRouter, Response, status, Request, HTTPException
 from fastapi.encoders import jsonable_encoder
 from model import (
@@ -14,6 +12,8 @@ from model import (
 )
 from utils import NotFoundError, AlreadyExistsError
 import logging
+from handlers import handle_read_personal_training
+from starlette.datastructures import Headers
 
 router = APIRouter(prefix="/v1/personal-training", tags=["personal-training"])
 logging.basicConfig(
@@ -33,46 +33,62 @@ def read_personal_training(
     day: Optional[int] = None,
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
-    existing_personal_training: Dict[str, Any]
-    if day is not None:
-        tg_id_year_week_day: str = str(tg_id) + str(year) + str(week) + str(day)
-
-        existing_personal_training = request.app.personaltraining_collection.find_one(
-            {"TgIdYearWeekDay": tg_id_year_week_day}
+    # existing_personal_training: Dict[str, Any]
+    # if day is not None:
+    #     tg_id_year_week_day: str = str(tg_id) + str(year) + str(week) + str(day)
+    #
+    #     existing_personal_training = request.app.personaltraining_collection.find_one(
+    #         {"TgIdYearWeekDay": tg_id_year_week_day}
+    #     )
+    #     if not existing_personal_training:
+    #         raise NotFoundError()
+    #     output.Resources.append(PersonalTraining(**existing_personal_training))
+    # else:
+    #     # If day is not provided, fetch all training plans for the specified level and week
+    #     tg_id_year_week_prefix: str = str(tg_id) + str(year) + str(week)
+    #     matching_personal_trainings = request.app.personaltraining_collection.find(
+    #         {"TgIdYearWeekDay": {"$regex": f"^{tg_id_year_week_prefix}"}}
+    #     )
+    #     matching_personal_trainings = list(matching_personal_trainings)
+    #     if not matching_personal_trainings:
+    #         api_key_year_week_prefix: str = (
+    #             str(request.headers.get("X-Api-Key")) + str(year) + str(week)
+    #         )
+    #         matching_personal_trainings = request.app.personaltraining_collection.find(
+    #             {"ApiKeyYearWeekDay": {"$regex": f"^{api_key_year_week_prefix}"}}
+    #         )
+    #         matching_personal_trainings = list(matching_personal_trainings)
+    #         if not matching_personal_trainings:
+    #             output.ErrorMessage = (
+    #                 "Personal training wasn't found with neither the TgId nor ApiKey."
+    #             )
+    #             output.StatusMessage = "Failure"
+    #             response.status_code = status.HTTP_404_NOT_FOUND
+    #             return output
+    #
+    #     for personal_training in matching_personal_trainings:
+    #         output.Resources.append(PersonalTrainingWithID(**personal_training))
+    #     output.Resources.sort(key=lambda x: x.Day)
+    db: Any = request.app.personaltraining_collection
+    headers: Headers = request.headers
+    try:
+        personal_trainings: List[
+            PersonalTrainingWithID
+        ] = handle_read_personal_training(
+            db=db, headers=headers, tg_id=tg_id, week=week, year=year, day=day
         )
-        if not existing_personal_training:
-            raise NotFoundError()
-        output.Resources.append(PersonalTraining(**existing_personal_training))
-    else:
-        # If day is not provided, fetch all training plans for the specified level and week
-        tg_id_year_week_prefix: str = str(tg_id) + str(year) + str(week)
-        matching_personal_trainings = request.app.personaltraining_collection.find(
-            {"TgIdYearWeekDay": {"$regex": f"^{tg_id_year_week_prefix}"}}
-        )
-        matching_personal_trainings = list(matching_personal_trainings)
-        if not matching_personal_trainings:
-            api_key_year_week_prefix: str = (
-                str(request.headers.get("X-Api-Key")) + str(year) + str(week)
-            )
-            matching_personal_trainings = request.app.personaltraining_collection.find(
-                {"ApiKeyYearWeekDay": {"$regex": f"^{api_key_year_week_prefix}"}}
-            )
-            matching_personal_trainings = list(matching_personal_trainings)
-            if not matching_personal_trainings:
-                output.ErrorMessage = (
-                    "Personal training wasn't found with neither the TgId nor ApiKey."
-                )
-                output.StatusMessage = "Failure"
-                response.status_code = status.HTTP_404_NOT_FOUND
-                return output
-
-        for personal_training in matching_personal_trainings:
-            output.Resources.append(PersonalTrainingWithID(**personal_training))
-        output.Resources.sort(key=lambda x: x.Day)
-
-    output.StatusMessage = "Success"
-    response.status_code = status.HTTP_200_OK
-    return output
+        output.Resources = personal_trainings
+        output.StatusMessage = "Success"
+        response.status_code = status.HTTP_200_OK
+        return output
+    except NotFoundError as e:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        output.ErrorMessage = e.detail
+        return output
+    except Exception as e:
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        output.ErrorMessage = str(e)
+        return output
 
 
 @router.put("/telegram_id", response_model=RouterOutput)
