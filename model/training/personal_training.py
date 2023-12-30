@@ -1,6 +1,5 @@
 import uuid
-from typing import List, Optional
-
+from typing import List, Optional, Literal, Union
 from pydantic import BaseModel, Field, validator
 
 try:
@@ -17,7 +16,9 @@ class PersonalTraining(BaseModel):
     Year: int
     Week: int
     Day: int
+    trainingType: Union[Literal["fitness"], Literal["swimming"]] = "fitness"
     inGym: bool
+    inSwimmingPool: bool
     Exercises: List[DryLandExercise]
     TotalNumberExercises: int = 0
     TotalTime: float = 0.0
@@ -47,6 +48,20 @@ class PersonalTraining(BaseModel):
         if value not in ["сек", "мин"]:
             raise ValueError("TotalTimeUnits must be either 'сек' or 'мин'")
         return value
+
+    @validator("inGym")
+    def validate_in_gym(cls, in_gym, values):
+        if in_gym and values.get("trainingType") != "fitness":
+            raise ValueError("inGym can only be True if trainingType is 'fitness'")
+        return in_gym
+
+    @validator("inSwimmingPool")
+    def validate_in_swimming_pool(cls, in_swimming_pool, values):
+        if in_swimming_pool and values.get("trainingType") != "swimming":
+            raise ValueError(
+                "inSwimmingPool can only be True if trainingType is 'swimming'"
+            )
+        return in_swimming_pool
 
 
 class PersonalTrainingWithID(PersonalTraining):
