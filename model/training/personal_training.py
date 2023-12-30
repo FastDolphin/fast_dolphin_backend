@@ -17,8 +17,8 @@ class PersonalTraining(BaseModel):
     Week: int
     Day: int
     trainingType: Union[Literal["fitness"], Literal["swimming"]] = "fitness"
-    inGym: bool
-    inSwimmingPool: bool
+    inGym: bool = True
+    inSwimmingPool: bool = False
     Exercises: List[DryLandExercise]
     TotalNumberExercises: int = 0
     TotalTime: float = 0.0
