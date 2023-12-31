@@ -4,8 +4,10 @@ from pydantic import BaseModel, Field, validator
 
 try:
     from ..dryland_training_plan import DryLandExercise
+    from ..training_plan import Exercise as WaterExercise
 except ModuleNotFoundError:
     from model.dryland_training_plan import DryLandExercise
+    from model.training_plan import Exercise as WaterExercise
 
 
 class PersonalTraining(BaseModel):
@@ -19,10 +21,12 @@ class PersonalTraining(BaseModel):
     trainingType: Union[Literal["fitness"], Literal["swimming"]] = "fitness"
     inGym: bool = True
     inSwimmingPool: bool = False
-    Exercises: List[DryLandExercise]
+    Exercises: List[Union[DryLandExercise, WaterExercise]]
     TotalNumberExercises: int = 0
     TotalTime: float = 0.0
     TotalTimeUnits: str = "сек"
+    TotalVolume: float = 0.0
+    TotalVolumeUnits: str = "м"
 
     def set_TgIdYearWeekDay(self):
         self.TgIdYearWeekDay = (
@@ -39,9 +43,27 @@ class PersonalTraining(BaseModel):
             self.TotalNumberExercises = len(self.Exercises)
 
     def set_total_training_time(self):
-        for exercise in self.Exercises:
-            exercise.set_total_exercise_time()
-            self.TotalTime += exercise.TotalExerciseTime
+        if self.Exercises and self.TotalTime == 0:
+            for exercise in self.Exercises:
+                if hasattr(exercise, "set_total_exercise_time"):
+                    exercise.set_total_exercise_time()
+                    self.TotalTime += exercise.TotalExerciseTime
+
+    def set_total_volume_and_time(self):
+        if self.Exercises and self.TotalVolume == 0 and self.TotalTime == 0:
+            for exercise in self.Exercises:
+                if isinstance(exercise.Volume, float) or isinstance(
+                    exercise.Volume, int
+                ):
+                    self.TotalVolume += exercise.Volume
+                if isinstance(exercise.Time, float) or isinstance(exercise.Time, int):
+                    self.TotalTime += exercise.Time
+
+    @validator("TotalVolumeUnits", pre=True, always=True)
+    def check_total_volume_units(cls, value):
+        if value not in ["м", "км"]:
+            raise ValueError("TotalVolumeUnits must be either 'м' or 'км'")
+        return value
 
     @validator("TotalTimeUnits", pre=True, always=True)
     def check_total_time_units(cls, value):
