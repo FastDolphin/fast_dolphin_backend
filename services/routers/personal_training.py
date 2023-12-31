@@ -153,6 +153,7 @@ def create_training_plan(
     personal_training.set_TgIdYearWeekDay()
     personal_training.set_total_number_of_exercises()
     personal_training.set_total_training_time()
+    personal_training.set_total_volume_and_time()
 
     if personal_training.ApiKey:
         personal_training.set_ApiKeyYearWeekDay()
