@@ -22,3 +22,15 @@ class AlreadyExistsError(HTTPException):
     def __init__(self):
         detail = "Already exists."
         super().__init__(status_code=409, detail=detail)
+
+
+class NotMatchedError(HTTPException):
+    def __init__(self):
+        detail = "No match for API Key."
+        super().__init__(status_code=409, detail=detail)
+
+
+class NotModifiedError(HTTPException):
+    def __init__(self):
+        detail = "`TgId` was not modified"
+        super().__init__(status_code=409, detail=detail)

@@ -5,5 +5,7 @@ from .exceptions import (
     AlreadyExistsError,
     NotFoundError,
     NotUpdatedError,
+    NotMatchedError,
+    NotModifiedError,
 )
 from .rabbitmq import connect_to_rabbitmq

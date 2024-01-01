@@ -10,9 +10,12 @@ from model import (
     Report,
     ReportWithId,
 )
-from utils import NotFoundError, AlreadyExistsError
+from utils import NotFoundError, AlreadyExistsError, NotModifiedError, NotMatchedError
 import logging
-from handlers import handle_read_personal_training
+from handlers import (
+    handle_read_personal_training,
+    handle_update_tg_id_in_personal_training,
+)
 from starlette.datastructures import Headers
 
 router = APIRouter(prefix="/v1/personal-training", tags=["personal-training"])
@@ -33,45 +36,9 @@ def read_personal_training(
     day: Optional[int] = None,
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
-    # existing_personal_training: Dict[str, Any]
-    # if day is not None:
-    #     tg_id_year_week_day: str = str(tg_id) + str(year) + str(week) + str(day)
-    #
-    #     existing_personal_training = request.app.personaltraining_collection.find_one(
-    #         {"TgIdYearWeekDay": tg_id_year_week_day}
-    #     )
-    #     if not existing_personal_training:
-    #         raise NotFoundError()
-    #     output.Resources.append(PersonalTraining(**existing_personal_training))
-    # else:
-    #     # If day is not provided, fetch all training plans for the specified level and week
-    #     tg_id_year_week_prefix: str = str(tg_id) + str(year) + str(week)
-    #     matching_personal_trainings = request.app.personaltraining_collection.find(
-    #         {"TgIdYearWeekDay": {"$regex": f"^{tg_id_year_week_prefix}"}}
-    #     )
-    #     matching_personal_trainings = list(matching_personal_trainings)
-    #     if not matching_personal_trainings:
-    #         api_key_year_week_prefix: str = (
-    #             str(request.headers.get("X-Api-Key")) + str(year) + str(week)
-    #         )
-    #         matching_personal_trainings = request.app.personaltraining_collection.find(
-    #             {"ApiKeyYearWeekDay": {"$regex": f"^{api_key_year_week_prefix}"}}
-    #         )
-    #         matching_personal_trainings = list(matching_personal_trainings)
-    #         if not matching_personal_trainings:
-    #             output.ErrorMessage = (
-    #                 "Personal training wasn't found with neither the TgId nor ApiKey."
-    #             )
-    #             output.StatusMessage = "Failure"
-    #             response.status_code = status.HTTP_404_NOT_FOUND
-    #             return output
-    #
-    #     for personal_training in matching_personal_trainings:
-    #         output.Resources.append(PersonalTrainingWithID(**personal_training))
-    #     output.Resources.sort(key=lambda x: x.Day)
-    db: Any = request.app.personaltraining_collection
-    headers: Headers = request.headers
     try:
+        db: Any = request.app.personaltraining_collection
+        headers: Headers = request.headers
         personal_trainings: List[
             PersonalTrainingWithID
         ] = handle_read_personal_training(
@@ -96,51 +63,26 @@ async def update_tg_id_in_training_plan(
     request: Request, tg_id: int, year: int, week: int, response: Response
 ) -> RouterOutput:
     output = RouterOutput(StatusMessage="Failure")
-    api_key_year_week_prefix: str = (
-        str(request.headers.get("X-Api-Key")) + str(year) + str(week)
-    )
-    matching_personal_trainings = request.app.personaltraining_collection.find(
-        {"ApiKeyYearWeekDay": {"$regex": f"^{api_key_year_week_prefix}"}}
-    )
-    matching_personal_trainings = list(matching_personal_trainings)
-    if not matching_personal_trainings:
+    try:
+        db: Any = request.app.personaltraining_collection
+        headers: Headers = request.headers
+        new_encoded: List[Any] = handle_update_tg_id_in_personal_training(
+            db, headers, tg_id, year, week
+        )
+        output.Resources = new_encoded
+        output.StatusMessage = "Success"
+    except NotFoundError:
         output.ErrorMessage = "Personal training wasn't found with ApiKey."
-        output.StatusMessage = "Failure"
+        output.StatusMessage = status.HTTP_404_NOT_FOUND
+    except NotModifiedError as e:
+        output.ErrorMessage = e.detail
+        response.status_code = status.HTTP_409_CONFLICT
+    except NotMatchedError as e:
+        output.ErrorMessage = e.detail
         response.status_code = status.HTTP_404_NOT_FOUND
-        return output
-    personal_trainings_no_tg_id: List[PersonalTrainingWithID] = []
-    personal_trainings_with_tg_id: List[PersonalTrainingWithID] = []
-    for personal_training in matching_personal_trainings:
-        personal_training_no_tg_id: PersonalTrainingWithID = PersonalTrainingWithID(
-            **personal_training
-        )
-        personal_trainings_no_tg_id.append(personal_training_no_tg_id)
-        personal_training_with_tg_id: PersonalTrainingWithID = (
-            personal_training_no_tg_id.copy(deep=True)
-        )
-        personal_training_with_tg_id.TgId = tg_id
-        personal_training_with_tg_id.set_TgIdYearWeekDay()
-        personal_trainings_with_tg_id.append(personal_training_with_tg_id)
-        for old, new in zip(personal_trainings_no_tg_id, personal_trainings_with_tg_id):
-            old_encoded = jsonable_encoder(old)
-            new_encoded = jsonable_encoder(new)
-            result = request.app.personaltraining_collection.replace_one(
-                old_encoded, new_encoded
-            )
-
-            if result.matched_count == 0:
-                output.ErrorMessage = "No match for API Key."
-                response.status_code = status.HTTP_409_CONFLICT
-                return output
-            elif result.modified_count == 0:
-                output.ErrorMessage = "API key was not modified"
-                response.status_code = status.HTTP_409_CONFLICT
-                return output
-            else:
-                response.status_code = status.HTTP_200_OK
-                output.StatusMessage = "Success"
-                output.Resources.append(new)
-                output.ErrorMessage = ""
+    except Exception as e:
+        output.ErrorMessage = str(e)
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     return output
 
 
